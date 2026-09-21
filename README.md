@@ -21,6 +21,8 @@ python3 -m http.server 8000
 
 ## How to use
 
+- **Take the tour** — a guided walkthrough runs automatically on your first visit; replay
+  it anytime from the **?** button in the top bar.
 - **Explore** — drag the canvas, scroll to zoom, hover a node for a summary.
 - **Search** — type a concept (e.g. `attention`, `RAG`, `gradient descent`); matches
   highlight in the graph and the dropdown jumps you to one.

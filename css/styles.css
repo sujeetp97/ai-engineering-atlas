@@ -416,6 +416,48 @@ html, body {
 }
 .path-crumb button:hover { border-color: var(--accent); }
 
+/* ---------------- Guided tour ---------------- */
+#btn-help {
+  width: 34px; height: 34px; border-radius: 50%;
+  border: 1px solid var(--line-strong); background: var(--card); color: var(--muted);
+  font-size: 15px; font-weight: 700; cursor: pointer; flex: none; font-family: var(--font-serif);
+}
+#btn-help:hover { border-color: var(--accent); color: var(--accent); }
+
+#tour { position: fixed; inset: 0; z-index: 300; display: none; }
+#tour.open { display: block; }
+#tour.no-spot { background: rgba(20, 16, 8, 0.55); }
+#tour-spot {
+  position: absolute; border-radius: 12px; pointer-events: none;
+  box-shadow: 0 0 0 9999px rgba(20, 16, 8, 0.55);
+  transition: left .25s ease, top .25s ease, width .25s ease, height .25s ease;
+}
+#tour.no-spot #tour-spot { display: none; }
+#tour-callout {
+  position: absolute; width: 330px; max-width: calc(100vw - 32px);
+  background: var(--panel-bg); border: 1px solid var(--line-strong);
+  border-radius: 14px; box-shadow: var(--shadow); padding: 18px 20px 16px;
+  pointer-events: auto; transition: left .2s ease, top .2s ease;
+}
+#tour-callout h3 { font-family: var(--font-serif); font-size: 18px; margin: 0 26px 8px 0; font-weight: 600; }
+#tour-callout p { font-size: 14px; line-height: 1.6; color: var(--ink); margin: 0 0 16px; }
+.tour-skip {
+  position: absolute; top: 12px; right: 13px; border: none; background: transparent;
+  color: var(--muted); font-size: 12px; cursor: pointer; font-family: var(--font-body);
+}
+.tour-skip:hover { color: var(--ink); }
+.tour-foot { display: flex; align-items: center; gap: 8px; }
+.tour-dots { display: flex; gap: 6px; margin-right: auto; }
+.tour-dots i { width: 7px; height: 7px; border-radius: 50%; background: var(--line-strong); display: block; transition: background .2s; }
+.tour-dots i.on { background: var(--accent); }
+.tour-btn {
+  border: 1px solid var(--line-strong); background: var(--card); color: var(--ink);
+  padding: 8px 14px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: var(--font-body);
+}
+.tour-btn:hover { border-color: var(--accent); color: var(--accent); }
+.tour-btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+.tour-btn.primary:hover { filter: brightness(1.07); color: #fff; }
+
 /* boot error */
 #boot-error {
   position: fixed; inset: 0; z-index: 200; display: flex; align-items: center; justify-content: center;
