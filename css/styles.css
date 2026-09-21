@@ -361,6 +361,61 @@ html, body {
 .quiz-result .rq-msg { font-size: 14px; margin: 8px 0 16px; line-height: 1.5; }
 .quiz-result .rq-actions { display: flex; gap: 10px; justify-content: center; }
 
+/* ---------------- Learning Path ---------------- */
+.path-btn {
+  border: none; background: var(--accent); color: #fff;
+  padding: 9px 15px; border-radius: 999px; font-size: 12.5px; font-weight: 600;
+  cursor: pointer; font-family: var(--font-body); white-space: nowrap; flex: none;
+}
+.path-btn:hover { filter: brightness(1.07); }
+.path-btn.on { background: var(--card); color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+
+.path-goal-group { margin: 18px 0; }
+.path-goal-group h4 { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin: 0 0 10px; }
+.path-goals { display: flex; flex-wrap: wrap; gap: 8px; }
+.path-goal-btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  border: 1px solid var(--line-strong); background: var(--card); color: var(--ink);
+  padding: 8px 12px; border-radius: 8px; font-size: 13px; cursor: pointer; font-family: var(--font-body);
+}
+.path-goal-btn:hover { border-color: var(--accent); color: var(--accent); }
+.path-goal-btn .dot { width: 8px; height: 8px; border-radius: 50%; }
+#path-concept-select {
+  width: 100%; padding: 10px 12px; border: 1px solid var(--line-strong); border-radius: 8px;
+  background: var(--card); color: var(--ink); font-size: 13.5px; font-family: var(--font-body);
+}
+
+.path-progress { margin: 4px 0 20px; }
+.path-progress-bar { height: 9px; background: var(--paper-2); border-radius: 999px; overflow: hidden; }
+.path-progress-bar span { display: block; height: 100%; background: var(--ok); border-radius: 999px; transition: width .35s ease; }
+.path-progress-label { font-size: 12px; color: var(--muted); margin-top: 7px; font-variant-numeric: tabular-nums; }
+
+.path-list { list-style: none; margin: 0 0 8px; padding: 0; }
+.path-item {
+  display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+  border: 1px solid var(--line); border-radius: 9px; margin-bottom: 7px; cursor: pointer;
+  background: var(--card); font-size: 13.5px;
+}
+.path-item:hover { border-color: var(--accent); }
+.path-item .pi-num {
+  width: 22px; height: 22px; border-radius: 50%; background: var(--paper-2); color: var(--muted);
+  display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; flex: none;
+}
+.path-item .dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+.path-item .pi-label { font-weight: 500; }
+.path-item.done { opacity: .62; }
+.path-item.done .pi-num { background: var(--ok-soft); color: var(--ok); }
+.path-item.next { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+.path-item.next .pi-num { background: var(--accent); color: #fff; }
+
+.path-crumb { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; font-size: 12.5px; color: var(--muted); }
+.path-crumb .pc-step { margin-right: auto; }
+.path-crumb button {
+  border: 1px solid var(--line-strong); background: var(--card); color: var(--accent);
+  padding: 5px 11px; border-radius: 7px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: var(--font-body);
+}
+.path-crumb button:hover { border-color: var(--accent); }
+
 /* boot error */
 #boot-error {
   position: fixed; inset: 0; z-index: 200; display: flex; align-items: center; justify-content: center;

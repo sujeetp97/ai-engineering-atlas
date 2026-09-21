@@ -163,6 +163,8 @@
           "border-width": 5, "border-opacity": 1, "z-index": 40,
         },
       },
+      { selector: "node.path-on", style: { "opacity": 1, "border-color": getVar("--accent") || "#b4531f", "border-width": 3, "border-opacity": 0.9, "z-index": 22 } },
+      { selector: "node.path-next", style: { "border-color": getVar("--accent") || "#b4531f", "border-width": 6, "border-opacity": 1, "z-index": 46, "font-weight": 700 } },
       { selector: "edge.hl", style: { "opacity": 0.95, "width": 2.6, "z-index": 20 } },
       {
         selector: "node.selected",
@@ -282,7 +284,7 @@
   //  HIGHLIGHT / FOCUS
   // ==========================================================
   function clearHighlight() {
-    cy.elements().removeClass("faded dim hl match selected");
+    cy.elements().removeClass("faded dim hl match selected path-on path-next");
   }
   function focusNode(id, opts) {
     opts = opts || {};
@@ -418,7 +420,7 @@
     openPanel(id);
   });
   cy.on("tap", function (evt) {
-    if (evt.target === cy) { /* background tap */ closePanel(); clearHighlight(); }
+    if (evt.target === cy) { /* background tap */ closePanel(); if (!pathState.active) clearHighlight(); }
   });
 
   // ==========================================================
@@ -437,6 +439,7 @@
     panel.hidden = true;
     scrim.hidden = true;
     currentNodeId = "";
+    if (pathState.active) highlightPath();
   }
 
   function openPanel(id, tab) {
@@ -457,6 +460,16 @@
     var quizCount = (n.quiz || []).length;
 
     var html = "";
+    // path breadcrumb when this node is part of the active learning path
+    var pIdx = pathState.active ? pathState.sequence.indexOf(n.id) : -1;
+    if (pIdx > -1) {
+      var pNextId = pathState.sequence[pIdx + 1];
+      html += '<div class="path-crumb">' +
+        '<button data-action="back-to-path">← Path</button>' +
+        '<span class="pc-step">Step ' + (pIdx + 1) + ' of ' + pathState.sequence.length + "</span>" +
+        (pNextId ? '<button data-action="path-next-node">Next: ' + escapeHtml(nodeById[pNextId].label) + " →</button>" : "") +
+        "</div>";
+    }
     html += '<span class="p-cluster-tag" style="background:' + hexA(c.color, 0.12) + ";color:" + c.color + '">' +
               '<span class="dot" style="background:' + c.color + '"></span>' + c.label + "</span>";
     html += '<h2 class="p-title">' + escapeHtml(n.label) + "</h2>";
@@ -491,6 +504,15 @@
     // start-quiz button
     var startBtn = panelScroll.querySelector("[data-action=start-quiz]");
     if (startBtn) startBtn.addEventListener("click", function () { switchTab(n, "quiz"); });
+    // path breadcrumb buttons
+    var backBtn = panelScroll.querySelector("[data-action=back-to-path]");
+    if (backBtn) backBtn.addEventListener("click", openPathPanel);
+    var nextNodeBtn = panelScroll.querySelector("[data-action=path-next-node]");
+    if (nextNodeBtn) nextNodeBtn.addEventListener("click", function () {
+      var idx = pathState.sequence.indexOf(n.id);
+      var nx = pathState.sequence[idx + 1];
+      if (nx) { focusNode(nx, { center: true }); openPanel(nx); }
+    });
 
     switchTab(n, tab);
   }
@@ -654,6 +676,7 @@
       progress.understood[n.id] = Date.now();
       cy.getElementById(n.id).addClass("understood");
       updateProgressLine();
+      if (pathState.active) highlightPath();
     }
     saveProgress();
 
@@ -722,6 +745,209 @@
     resizeT = setTimeout(function () { cy.resize(); }, 150);
   });
 
+  // ==========================================================
+  //  LEARNING PATH (goal-driven)
+  //  A path is a topological ordering of the prerequisites of a goal,
+  //  skipping what's already mastered. Uses the prereq/enables/partof DAG.
+  // ==========================================================
+  var pathState = { active: false, goal: null, sequence: [] };
+
+  var clusterRank = {};
+  Object.keys(CL).forEach(function (c, i) { clusterRank[c] = i; });
+
+  // ordering adjacency (prereq/enables/partof imply "learn source before target")
+  var ORDER_TYPES = { prereq: 1, enables: 1, partof: 1 };
+  var fwdOrder = {}, revOrder = {};
+  ATLAS.nodes.forEach(function (n) { fwdOrder[n.id] = []; revOrder[n.id] = []; });
+  validEdges.forEach(function (e) {
+    if (ORDER_TYPES[e.type]) { fwdOrder[e.source].push(e.target); revOrder[e.target].push(e.source); }
+  });
+
+  function firstUnmastered(seq) {
+    for (var i = 0; i < seq.length; i++) if (!isUnderstood(seq[i])) return seq[i];
+    return null;
+  }
+
+  function computeSequence(goal) {
+    var targets;
+    if (goal.type === "all") targets = ATLAS.nodes.map(function (n) { return n.id; });
+    else if (goal.type === "cluster") targets = ATLAS.nodes.filter(function (n) { return n.cluster === goal.id; }).map(function (n) { return n.id; });
+    else targets = [goal.id];
+
+    // required = targets + all their prerequisites (ancestors along ordering edges)
+    var required = {};
+    var stack = targets.slice();
+    targets.forEach(function (id) { required[id] = 1; });
+    while (stack.length) {
+      var n = stack.pop();
+      (revOrder[n] || []).forEach(function (s) { if (!required[s]) { required[s] = 1; stack.push(s); } });
+    }
+    var ids = Object.keys(required);
+
+    // Kahn topological sort, tie-broken by cluster order then label (coherent reading)
+    var indeg = {};
+    ids.forEach(function (id) { indeg[id] = 0; });
+    ids.forEach(function (s) { fwdOrder[s].forEach(function (t) { if (required[t]) indeg[t]++; }); });
+    function pr(a, b) {
+      var na = nodeById[a], nb = nodeById[b];
+      if (clusterRank[na.cluster] !== clusterRank[nb.cluster]) return clusterRank[na.cluster] - clusterRank[nb.cluster];
+      return na.label < nb.label ? -1 : (na.label > nb.label ? 1 : 0);
+    }
+    var ready = ids.filter(function (id) { return indeg[id] === 0; });
+    var seq = [];
+    while (ready.length) {
+      ready.sort(pr);
+      var cur = ready.shift();
+      seq.push(cur);
+      fwdOrder[cur].forEach(function (t) { if (required[t]) { indeg[t]--; if (indeg[t] === 0) ready.push(t); } });
+    }
+    if (seq.length < ids.length) ids.forEach(function (id) { if (seq.indexOf(id) === -1) seq.push(id); });
+    return seq;
+  }
+
+  function highlightPath() {
+    clearHighlight();
+    if (!pathState.active) return;
+    var set = cy.collection();
+    pathState.sequence.forEach(function (id) { set = set.union(cy.getElementById(id)); });
+    cy.elements().addClass("faded");
+    set.removeClass("faded").addClass("path-on");
+    set.connectedEdges().forEach(function (ed) {
+      if (set.contains(ed.source()) && set.contains(ed.target())) ed.removeClass("faded").addClass("hl");
+    });
+    var next = firstUnmastered(pathState.sequence);
+    if (next) cy.getElementById(next).addClass("path-next");
+  }
+
+  function goalLabel() {
+    var g = pathState.goal;
+    if (!g) return "";
+    if (g.type === "all") return "The complete curriculum";
+    if (g.type === "cluster") return CL[g.id] ? CL[g.id].label : g.id;
+    return nodeById[g.id] ? nodeById[g.id].label : g.id;
+  }
+
+  function openPathPanel() {
+    panel.hidden = false; scrim.hidden = false; panelScroll.scrollTop = 0;
+    if (pathState.active) renderPathItinerary();
+    else if (progress.path) startPath(progress.path);
+    else renderPathSetup();
+    setPathBtn();
+  }
+
+  function startPath(goal) {
+    pathState.active = true;
+    pathState.goal = goal;
+    pathState.sequence = computeSequence(goal);
+    progress.path = goal; saveProgress();
+    highlightPath();
+    renderPathItinerary();
+    setPathBtn();
+  }
+
+  function exitPath() {
+    pathState.active = false; pathState.goal = null; pathState.sequence = [];
+    delete progress.path; saveProgress();
+    clearHighlight();
+    closePanel();
+    setPathBtn();
+  }
+
+  function renderPathSetup() {
+    panel.hidden = false; scrim.hidden = false; panelScroll.scrollTop = 0;
+    currentNodeId = "";
+    var html = "";
+    html += '<span class="p-cluster-tag" style="background:var(--accent-soft);color:var(--accent)">◆ Learning Path</span>';
+    html += '<h2 class="p-title">Chart your path</h2>';
+    html += '<p class="p-short">Pick a destination. The atlas orders its prerequisites for you and skips anything you’ve already mastered.</p>';
+
+    html += '<div class="path-goal-group"><h4>Master a whole domain</h4><div class="path-goals">';
+    Object.keys(CL).forEach(function (cid) {
+      var c = CL[cid];
+      html += '<button class="path-goal-btn" data-gtype="cluster" data-gid="' + cid + '"><span class="dot" style="background:' + c.color + '"></span>' + escapeHtml(c.label) + "</button>";
+    });
+    html += "</div></div>";
+
+    html += '<div class="path-goal-group"><h4>Or reach one concept</h4><select id="path-concept-select"><option value="">Choose a concept…</option>';
+    Object.keys(CL).forEach(function (cid) {
+      html += '<optgroup label="' + escapeHtml(CL[cid].label) + '">';
+      ATLAS.nodes.filter(function (n) { return n.cluster === cid; }).forEach(function (n) {
+        html += '<option value="' + n.id + '">' + escapeHtml(n.label) + "</option>";
+      });
+      html += "</optgroup>";
+    });
+    html += "</select></div>";
+
+    html += '<div class="path-goal-group"><button class="btn-secondary" data-gtype="all" style="width:100%">The complete curriculum — everything, in order</button></div>';
+
+    panelScroll.innerHTML = html;
+    panelScroll.querySelectorAll(".path-goal-btn").forEach(function (b) {
+      b.addEventListener("click", function () { startPath({ type: "cluster", id: b.getAttribute("data-gid") }); });
+    });
+    panelScroll.querySelector("[data-gtype=all]").addEventListener("click", function () { startPath({ type: "all" }); });
+    panelScroll.querySelector("#path-concept-select").addEventListener("change", function () {
+      if (this.value) startPath({ type: "node", id: this.value });
+    });
+  }
+
+  function renderPathItinerary() {
+    panel.hidden = false; scrim.hidden = false;
+    currentNodeId = "";
+    var seq = pathState.sequence;
+    var done = seq.filter(isUnderstood).length;
+    var next = firstUnmastered(seq);
+    var pct = seq.length ? Math.round((done / seq.length) * 100) : 0;
+
+    var html = "";
+    html += '<span class="p-cluster-tag" style="background:var(--accent-soft);color:var(--accent)">◆ Learning Path</span>';
+    html += '<h2 class="p-title">' + escapeHtml(goalLabel()) + "</h2>";
+    html += '<div class="path-progress"><div class="path-progress-bar"><span style="width:' + pct + '%"></span></div>' +
+            '<div class="path-progress-label">' + done + " of " + seq.length + " concepts mastered · " + pct + "%</div></div>";
+
+    if (next) {
+      html += '<button class="btn-primary" data-action="path-next" style="width:100%;margin-bottom:20px">' +
+        (done ? "Continue → " : "Start → ") + escapeHtml(nodeById[next].label) + "</button>";
+    } else {
+      html += '<div class="p-status learned" style="margin-bottom:20px">✓ Path complete — every concept mastered. Revisit any node to keep it fresh.</div>';
+    }
+
+    html += '<ol class="path-list">';
+    seq.forEach(function (id, i) {
+      var n = nodeById[id];
+      var st = isUnderstood(id) ? "done" : (id === next ? "next" : "todo");
+      html += '<li class="path-item ' + st + '" data-id="' + id + '">' +
+        '<span class="pi-num">' + (st === "done" ? "✓" : (i + 1)) + "</span>" +
+        clusterDot(n.cluster) +
+        '<span class="pi-label">' + escapeHtml(n.label) + "</span></li>";
+    });
+    html += "</ol>";
+
+    html += '<div class="learn-actions"><button class="btn-secondary" data-action="path-change">Change goal</button>' +
+            '<button class="btn-secondary" data-action="path-exit">Exit path</button></div>';
+
+    panelScroll.innerHTML = html;
+    panelScroll.scrollTop = 0;
+    highlightPath();
+
+    panelScroll.querySelectorAll(".path-item").forEach(function (li) {
+      li.addEventListener("click", function () { var id = li.getAttribute("data-id"); focusNode(id, { center: true }); openPanel(id); });
+    });
+    var nb = panelScroll.querySelector("[data-action=path-next]");
+    if (nb) nb.addEventListener("click", function () { var nx = firstUnmastered(pathState.sequence); if (nx) { focusNode(nx, { center: true }); openPanel(nx); } });
+    panelScroll.querySelector("[data-action=path-change]").addEventListener("click", renderPathSetup);
+    panelScroll.querySelector("[data-action=path-exit]").addEventListener("click", exitPath);
+  }
+
+  function setPathBtn() {
+    var btn = document.getElementById("btn-path");
+    if (!btn) return;
+    btn.classList.toggle("on", pathState.active);
+    btn.textContent = pathState.active ? "◆ Path on" : "◆ Learning Path";
+  }
+
+  document.getElementById("btn-path").addEventListener("click", openPathPanel);
+  setPathBtn();
+
   // expose for debugging
-  window.__atlas = { cy: cy, data: ATLAS, progress: progress };
+  window.__atlas = { cy: cy, data: ATLAS, progress: progress, path: pathState, computeSequence: computeSequence };
 })();

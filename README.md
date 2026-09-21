@@ -29,6 +29,11 @@ python3 -m http.server 8000
 - **Quiz** — take the quiz at the end of a lesson. Score ≥ 75% and the node is marked
   understood (saved in your browser's `localStorage`). Come back a few days later to
   re-quiz — spacing is what moves knowledge into long-term memory.
+- **Learning Path** — click **◆ Learning Path**, pick a destination (a single concept, a
+  whole domain, or the complete curriculum), and the atlas orders the prerequisites for
+  you — skipping anything you've already mastered — into a numbered, checkable itinerary.
+  The route is highlighted in the graph; each quiz you pass advances the path to the next
+  concept. (This is why the prerequisite links must stay acyclic — the validator enforces it.)
 
 ## The eight domains
 
