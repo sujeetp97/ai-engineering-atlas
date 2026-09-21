@@ -78,7 +78,6 @@ ATLAS.addEdges([
   // ============================ DEEP LEARNING (intra) ============================
   { source: "neural-networks", target: "deep-learning", type: "partof" },
   { source: "activation-functions", target: "neural-networks", type: "partof" },
-  { source: "backpropagation", target: "neural-networks", type: "partof" },
   { source: "loss-functions", target: "neural-networks", type: "uses" },
   { source: "optimizers", target: "neural-networks", type: "uses" },
   { source: "neural-networks", target: "backpropagation", type: "prereq" },

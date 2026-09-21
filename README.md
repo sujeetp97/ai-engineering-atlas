@@ -59,8 +59,20 @@ vendor/               Cytoscape.js + fcose layout (vendored for offline use)
 ## Adding or editing knowledge
 
 Each node is a plain object (see `data/10-math.js` for the schema: `learn` sections,
-`keyPoints`, a primary `source`, and a `quiz`). Add a node to the relevant cluster file
-and add its links to `data/99-edges.js`. No build step — reload the page.
+`keyPoints`, a primary `source`, and a `quiz`). Add a node to the relevant cluster file,
+add its links to `data/99-edges.js`, bump the `?v=` for the files you changed in
+`index.html`, then reload. No build step.
+
+- **Full guide:** [`docs/AUTHORING.md`](docs/AUTHORING.md) — node/edge schema, the quality
+  bar, and step-by-step recipes for adding a concept, a sub-area, or a whole new domain.
+- **For AI agents:** [`AGENTS.md`](AGENTS.md) — how a Claude Code session should update the
+  graph on request.
+- **Validate before committing:**
+  ```bash
+  node tools/validate.js
+  ```
+  Checks unique ids, valid edge references, no orphan nodes, full connectivity, valid quiz
+  answers, and that the prerequisite graph has no cycles (learning paths depend on this).
 
 The teaching approach (knowledge first, then retrieval-practice quizzes with
 same-length options, citations to primary sources, spaced review) follows the
