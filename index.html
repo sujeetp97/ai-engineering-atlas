@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/styles.css?v=3" />
+  <link rel="stylesheet" href="css/styles.css?v=4" />
 </head>
 <body>
   <!-- ============ Top bar ============ -->
@@ -16,8 +16,14 @@
       <span class="brand-mark" aria-hidden="true">◍</span>
       <div class="brand-text">
         <h1>AI Engineering Atlas</h1>
-        <p id="progress-line">Loading knowledge graph…</p>
+        <button id="progress-line" title="Your progress — click to export, import, or reset">Loading knowledge graph…</button>
       </div>
+      <div id="progress-menu" hidden>
+        <button data-act="export" type="button">⭳&nbsp;&nbsp;Export my progress</button>
+        <button data-act="import" type="button">⭱&nbsp;&nbsp;Import progress</button>
+        <button data-act="reset" class="danger" type="button">↺&nbsp;&nbsp;Reset progress</button>
+      </div>
+      <input type="file" id="import-file" accept="application/json,.json" hidden />
     </div>
 
     <div class="search-wrap">
@@ -82,7 +88,7 @@
   <script src="data/99-edges.js?v=3"></script>
 
   <!-- ============ App ============ -->
-  <script src="js/app.js?v=3"></script>
+  <script src="js/app.js?v=4"></script>
   <script src="js/tour.js?v=1"></script>
 </body>
 </html>

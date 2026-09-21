@@ -948,6 +948,104 @@
   document.getElementById("btn-path").addEventListener("click", openPathPanel);
   setPathBtn();
 
+  // ==========================================================
+  //  PROGRESS EXPORT / IMPORT / RESET
+  //  Progress lives only in this browser's localStorage. Export writes it to a
+  //  JSON file; import merges a file back in (e.g. from another device).
+  // ==========================================================
+  var progressLineBtn = document.getElementById("progress-line");
+  var progressMenu = document.getElementById("progress-menu");
+  var importFile = document.getElementById("import-file");
+
+  progressLineBtn.addEventListener("click", function (e) {
+    e.stopPropagation();
+    progressMenu.hidden = !progressMenu.hidden;
+  });
+  document.addEventListener("click", function (e) {
+    if (!progressMenu.hidden && !e.target.closest("#progress-menu") && e.target !== progressLineBtn) progressMenu.hidden = true;
+  });
+  progressMenu.querySelector("[data-act=export]").addEventListener("click", function () { progressMenu.hidden = true; exportProgress(); });
+  progressMenu.querySelector("[data-act=import]").addEventListener("click", function () { progressMenu.hidden = true; importFile.click(); });
+  progressMenu.querySelector("[data-act=reset]").addEventListener("click", function () { progressMenu.hidden = true; resetProgress(); });
+
+  importFile.addEventListener("change", function () {
+    var f = importFile.files && importFile.files[0];
+    if (!f) return;
+    var reader = new FileReader();
+    reader.onload = function () {
+      try { importProgress(JSON.parse(reader.result)); }
+      catch (err) { alert("Couldn't read that file — it doesn't look like a valid Atlas progress export."); }
+      importFile.value = "";
+    };
+    reader.onerror = function () { alert("Couldn't read that file."); importFile.value = ""; };
+    reader.readAsText(f);
+  });
+
+  function countUnderstood() {
+    return Object.keys(progress.understood).filter(function (k) { return nodeById[k]; }).length;
+  }
+
+  function exportProgress() {
+    var payload = {
+      app: "ai-engineering-atlas",
+      kind: "progress",
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      understoodCount: countUnderstood(),
+      totalConcepts: ATLAS.nodes.length,
+      progress: progress,
+    };
+    var blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = "ai-engineering-atlas-progress-" + new Date().toISOString().slice(0, 10) + ".json";
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  }
+
+  function importProgress(data) {
+    var inc = (data && data.progress) ? data.progress : data;
+    if (!inc || (typeof inc.understood !== "object" && typeof inc.best !== "object")) {
+      alert("That file doesn't contain Atlas progress data.");
+      return;
+    }
+    var added = 0, skipped = 0;
+    if (inc.understood && typeof inc.understood === "object") {
+      Object.keys(inc.understood).forEach(function (id) {
+        if (!nodeById[id]) { skipped++; return; }
+        if (!progress.understood[id]) { progress.understood[id] = inc.understood[id] || Date.now(); added++; }
+      });
+    }
+    if (inc.best && typeof inc.best === "object") {
+      Object.keys(inc.best).forEach(function (id) {
+        if (!nodeById[id]) return;
+        var v = +inc.best[id];
+        if (!isNaN(v) && (progress.best[id] == null || v > progress.best[id])) progress.best[id] = v;
+      });
+    }
+    if (!progress.path && inc.path && (inc.path.type === "all" || nodeById[inc.path.id] || CL[inc.path.id])) {
+      progress.path = inc.path;
+    }
+    saveProgress();
+    refreshUnderstoodClasses();
+    updateProgressLine();
+    if (pathState.active) highlightPath();
+    alert("Imported progress — merged in " + added + " newly-understood concept" + (added === 1 ? "" : "s") + ".\n" +
+      "You now have " + countUnderstood() + " of " + ATLAS.nodes.length + " marked understood." +
+      (skipped ? "\n(" + skipped + " entr" + (skipped === 1 ? "y" : "ies") + " skipped — not in this version of the atlas.)" : ""));
+  }
+
+  function resetProgress() {
+    if (!confirm("Reset your progress?\n\nThis clears every concept you've marked understood, your quiz scores, and your saved path. It only affects this browser and can't be undone.")) return;
+    progress.understood = {}; progress.best = {}; delete progress.path;
+    saveProgress();
+    if (pathState.active) exitPath();
+    refreshUnderstoodClasses();
+    updateProgressLine();
+    clearHighlight();
+  }
+
   // expose for debugging
   window.__atlas = { cy: cy, data: ATLAS, progress: progress, path: pathState, computeSequence: computeSequence };
 })();
