@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Engineering Atlas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <!-- ============ Top bar ============ -->
+  <header id="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">◍</span>
+      <div class="brand-text">
+        <h1>AI Engineering Atlas</h1>
+        <p id="progress-line">Loading knowledge graph…</p>
+      </div>
+    </div>
+
+    <div class="search-wrap">
+      <input id="search" type="text" placeholder="Search concepts — e.g. attention, RAG, gradient descent…" autocomplete="off" spellcheck="false" />
+      <button id="search-clear" title="Clear search" aria-label="Clear search">✕</button>
+      <ul id="search-results" role="listbox"></ul>
+    </div>
+
+    <div class="topbar-actions">
+      <button id="btn-fit" class="ghost-btn" title="Fit whole graph to view">Fit</button>
+      <button id="btn-reset" class="ghost-btn" title="Reset layout & filters">Reset</button>
+    </div>
+  </header>
+
+  <!-- ============ Cluster legend / filters ============ -->
+  <div id="legend" aria-label="Domain filters"></div>
+
+  <!-- ============ Graph canvas ============ -->
+  <main id="cy" role="application" aria-label="Knowledge graph"></main>
+
+  <!-- ============ Hover tooltip ============ -->
+  <div id="tooltip" hidden></div>
+
+  <!-- ============ Node detail / learn / quiz panel ============ -->
+  <aside id="panel" class="panel" hidden>
+    <button id="panel-close" title="Close" aria-label="Close panel">✕</button>
+    <div id="panel-scroll">
+      <!-- filled by app.js -->
+    </div>
+  </aside>
+
+  <div id="panel-scrim" hidden></div>
+
+  <!-- ============ Empty / loading state ============ -->
+  <div id="boot-error" hidden>
+    <div>
+      <h2>Could not start</h2>
+      <p id="boot-error-msg"></p>
+    </div>
+  </div>
+
+  <!-- ============ Vendored libraries (offline-friendly) ============ -->
+  <script src="vendor/cytoscape.min.js"></script>
+  <script src="vendor/layout-base.js"></script>
+  <script src="vendor/cose-base.js"></script>
+  <script src="vendor/cytoscape-fcose.js"></script>
+
+  <!-- ============ Knowledge data (plain <script> so it works via file://) ============ -->
+  <script src="data/_registry.js"></script>
+  <script src="data/00-clusters.js"></script>
+  <script src="data/10-math.js"></script>
+  <script src="data/20-data-science.js"></script>
+  <script src="data/30-machine-learning.js"></script>
+  <script src="data/40-deep-learning.js"></script>
+  <script src="data/50-building-ai.js"></script>
+  <script src="data/60-ai-engineering.js"></script>
+  <script src="data/70-using-ai.js"></script>
+  <script src="data/80-cross-cutting.js"></script>
+  <script src="data/99-edges.js"></script>
+
+  <!-- ============ App ============ -->
+  <script src="js/app.js"></script>
+</body>
+</html>
