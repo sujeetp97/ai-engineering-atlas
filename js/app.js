@@ -705,9 +705,21 @@
     cy.layout(layoutOpts()).run();
   });
 
-  // fit once layout settles
-  cy.ready(function () {
-    cy.one("layoutstop", function () { cy.animate({ fit: { padding: 60 } }, { duration: 500 }); });
+  // fit once layout settles — robust against races, with a fallback
+  var didInitialFit = false;
+  function initialFit() {
+    if (didInitialFit) return;
+    didInitialFit = true;
+    cy.animate({ fit: { padding: 50 } }, { duration: 500 });
+  }
+  cy.one("layoutstop", initialFit);
+  setTimeout(initialFit, 1600); // fallback if layoutstop was missed
+
+  // keep the graph framed when the window resizes (e.g. panel opens/closes, device rotates)
+  var resizeT;
+  window.addEventListener("resize", function () {
+    clearTimeout(resizeT);
+    resizeT = setTimeout(function () { cy.resize(); }, 150);
   });
 
   // expose for debugging
