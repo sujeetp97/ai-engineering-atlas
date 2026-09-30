@@ -41,9 +41,9 @@ ATLAS.addNodes([
       source: { title: "3Blue1Brown — Essence of Linear Algebra", url: "https://www.3blue1brown.com/topics/linear-algebra", note: "The best visual intuition for vectors, matrices, and transformations." },
     },
     quiz: [
-      { q: "In a neural network, what does a single dense (fully-connected) layer fundamentally compute?", options: ["A sort of the input values", "A matrix multiply of the input, plus a bias, then a non-linearity", "A random shuffle of neurons", "A database lookup"], answer: 1, explain: "A dense layer is `activation(W·x + b)` — a linear transformation (matrix multiply plus bias) followed by a non-linear activation." },
-      { q: "Why do deep networks insert non-linear activation functions between layers?", options: ["To make training slower on purpose", "Because stacking only linear layers is equivalent to a single linear layer", "To save memory", "Non-linearities are decorative and optional"], answer: 1, explain: "Composing linear maps yields another linear map, so without non-linearity, depth adds no expressive power." },
-      { q: "How is a batch of many data points typically pushed through a layer efficiently?", options: ["One at a time in a Python loop", "As a matrix–matrix multiply on a GPU", "By emailing them to a server", "It cannot be batched"], answer: 1, explain: "Stacking data points into a matrix turns per-sample transforms into one matrix–matrix multiply, which GPUs execute in massive parallel." },
+      { q: "Why does a deep network need non-linear activations between its matrix layers?", options: ["Matrix multiplication only works on positive numbers", "Stacked linear layers collapse into a single layer", "Non-linearity makes each layer multiply faster", "Linear layers can't handle more than two dimensions"], answer: 1, explain: "Composing linear maps gives another linear map, so without non-linearity a hundred layers act like one. Activations are what give depth its power." },
+      { q: "In a neural-network layer, what does the weight matrix do to the incoming vector?", options: ["Sorts its numbers from largest to smallest", "Stores it for later lookup by the model", "Converts it into a single probability", "Applies a linear transformation to it"], answer: 3, explain: "A matrix encodes a linear transformation: multiplying by it moves, rotates, scales or projects the vector into a new space." },
+      { q: "A function f satisfies f(a + b) = f(a) + f(b) and f(c·a) = c·f(a). What does that make it?", options: ["Non-linear", "Random", "Linear", "Recursive"], answer: 2, explain: "Preserving addition and scaling is the definition of linearity, and it's what makes linear maps predictable to compose and analyze." },
     ],
   },
 
@@ -78,9 +78,9 @@ ATLAS.addNodes([
       source: { title: "Immersive Math — Interactive Linear Algebra", url: "http://immersivemath.com/ila/index.html", note: "Free, interactive chapters on vectors and spaces." },
     },
     quiz: [
-      { q: "What does the dimension of a vector space count?", options: ["The number of data points you have", "The number of independent directions in the space", "The maximum value any number can take", "The number of GPUs required"], answer: 1, explain: "Dimension is the count of independent directions (basis vectors) needed to reach any point in the space." },
-      { q: "In many embedding systems, why is direction often more meaningful than magnitude?", options: ["Magnitude is impossible to compute", "Semantic similarity is captured by the angle between vectors, measured with cosine similarity", "Vectors have no magnitude", "It is a rendering trick"], answer: 1, explain: "Embeddings encode meaning largely in direction, so cosine similarity (the angle) compares meaning while ignoring length." },
-      { q: "The 'curse of dimensionality' refers to the fact that as dimensions grow…", options: ["Computers get faster", "Distances tend to concentrate and intuition/geometry behave unexpectedly", "Vectors become two-dimensional", "Data becomes free"], answer: 1, explain: "In very high dimensions, pairwise distances become similar and sampling gets sparse, which complicates learning and search." },
+      { q: "Two document embeddings point in the same direction, but one is much longer. For semantic search, how similar are they?", options: ["Not similar, since their lengths differ", "Very similar; direction carries the meaning", "Impossible to tell without a third vector", "Similar only if both lengths equal one"], answer: 1, explain: "In embeddings, direction usually carries the meaning and magnitude is secondary, which is why cosine similarity (the angle) is so common." },
+      { q: "What is the L2 norm (length) of the vector [3, 4]?", options: ["7", "12", "5", "25"], answer: 2, explain: "The L2 norm is √(3² + 4²) = √25 = 5. Seven is the plain sum of the components, and 25 is the squared length." },
+      { q: "Why do embedding spaces use hundreds or thousands of dimensions?", options: ["Computers can only store vectors of that size", "Fewer dimensions would make vectors too long", "Each dimension stores one specific word", "More dimensions leave room to separate concepts"], answer: 3, explain: "High dimensions give capacity to place many concepts and relationships distinctly, though they also bring the curse of dimensionality." },
     ],
   },
 
@@ -114,9 +114,9 @@ ATLAS.addNodes([
       source: { title: "MIT 18.06 (Gilbert Strang) — Linear Algebra", url: "https://ocw.mit.edu/courses/18-06-linear-algebra-spring-2010/", note: "The canonical university course; lecture 1–3 cover matrices and multiplication." },
     },
     quiz: [
-      { q: "If matrix A is 3×4 and matrix B is 4×2, what is the shape of A·B?", options: ["4×4", "3×2", "2×3", "The multiplication is undefined"], answer: 1, explain: "Inner dimensions (4 and 4) must match; the result takes the outer dimensions: 3×2." },
-      { q: "Applying transformation A and then transformation B to a vector equals multiplying by which single matrix?", options: ["A·B", "B·A", "A + B", "A − B"], answer: 1, explain: "Right-to-left: B·A applies A first, then B, matching function composition B(A(x))." },
-      { q: "Why is specialized hardware (GPUs/TPUs) so central to AI?", options: ["It stores more files", "It performs the massive matrix multiplications of training/inference in parallel", "It writes Python faster", "It reduces the need for data"], answer: 1, explain: "Model math is dominated by matmul, which these chips execute with thousands of parallel arithmetic units." },
+      { q: "A weight matrix is 512×1024. What does it do to vectors?", options: ["Maps 512-dimensional inputs to 1024-dimensional outputs", "Maps 1024-dimensional inputs to 512-dimensional outputs", "Stores 512 separate vectors of length 1024 for lookup", "Sorts inputs into 512 groups of 1024 items each"], answer: 1, explain: "An m×n matrix maps n-dimensional vectors to m-dimensional ones, so here 1024 inputs become 512 outputs." },
+      { q: "You apply transformation A, then transformation B. Which single matrix does the same thing?", options: ["A·B", "B·A", "A + B", "A − B"], answer: 1, explain: "Composition is multiplication, applied right to left: first A, then B, gives B·A. Order matters, since matrix multiplication isn't commutative." },
+      { q: "You double the batch size and the number of output units in a layer (inputs unchanged). Roughly how does the layer's matmul compute change?", options: ["It doubles", "It stays the same", "It halves", "It quadruples"], answer: 3, explain: "Matmul cost scales with the product of the dimensions (batch × inputs × outputs), so doubling two of them multiplies compute by four. Shapes drive cost." },
     ],
   },
 
@@ -153,9 +153,9 @@ ATLAS.addNodes([
       source: { title: "3Blue1Brown — Dot products and duality", url: "https://www.youtube.com/watch?v=LyGKycYT2v0", note: "Builds geometric intuition for what the dot product means." },
     },
     quiz: [
-      { q: "Two unit vectors point in exactly the same direction. What is their dot product?", options: ["0", "1", "−1", "Undefined"], answer: 1, explain: "For unit vectors, dot product equals cos(θ); identical direction means θ=0 and cos(0)=1." },
-      { q: "What does cosine similarity ignore that a raw dot product does not?", options: ["The direction of the vectors", "The magnitude (length) of the vectors", "The sign of the result", "The number of dimensions"], answer: 1, explain: "Cosine similarity divides out both magnitudes, comparing angle/direction only." },
-      { q: "In a transformer's attention, what is compared with a dot product?", options: ["Pixels against pixels", "A query vector against key vectors to score relevance", "File names against timestamps", "Learning rate against batch size"], answer: 1, explain: "Attention scores come from dot products of queries with keys, indicating how much each token should attend to others." },
+      { q: "Two non-zero vectors have a dot product of zero. What does that say about them?", options: ["They're identical and point the same way", "At least one of them must be all zeros", "They're perpendicular: unrelated directions", "They point in exactly opposite directions"], answer: 2, explain: "The dot product equals ‖a‖‖b‖cos θ. Zero means cos θ = 0, a 90° angle, so the vectors are orthogonal. Opposite directions give a negative value." },
+      { q: "In a transformer, what is the dot product used for?", options: ["Converting tokens from text into numbers", "Scoring how relevant each key is to a query", "Choosing the learning rate for each layer", "Counting how many tokens are in the prompt"], answer: 1, explain: "Attention dots each query against every key to score relevance. Those scores, after softmax, weight the values." },
+      { q: "Why is cosine similarity usually preferred over the raw dot product for comparing embeddings?", options: ["It is always larger than the dot product", "It works without multiplying any numbers", "It only returns whole numbers from 0 to 10", "It compares direction only, not length"], answer: 3, explain: "Dividing by both lengths leaves cos θ, from −1 to 1, so long and short vectors pointing the same way count as equally similar." },
     ],
   },
 
@@ -193,9 +193,9 @@ ATLAS.addNodes([
       source: { title: "Gilbert Strang — Eigenvalues and SVD (MIT 18.06)", url: "https://ocw.mit.edu/courses/18-06-linear-algebra-spring-2010/", note: "See the eigenvalue and SVD lectures." },
     },
     quiz: [
-      { q: "What is special about an eigenvector of a matrix A?", options: ["It is always the zero vector", "A only scales it, leaving its direction unchanged", "It has exactly two dimensions", "It cannot be multiplied by A"], answer: 1, explain: "By definition A·v = λv: the eigenvector's direction is preserved and it is merely scaled by λ." },
-      { q: "Keeping only the largest singular values from an SVD gives you…", options: ["A random matrix", "The best low-rank approximation of the original matrix", "A larger matrix", "The inverse matrix"], answer: 1, explain: "Truncating SVD to the top-k singular values yields the optimal rank-k approximation (Eckart–Young theorem)." },
-      { q: "PCA reduces dimensionality by projecting data onto…", options: ["Random directions", "The directions (principal components) of greatest variance", "The smallest eigenvalue only", "The time axis"], answer: 1, explain: "PCA keeps the top principal components — directions capturing the most variance/information." },
+      { q: "Applying matrix A to vector v gives exactly 3v. What is v?", options: ["The inverse of A multiplied by three", "An eigenvector of A with eigenvalue 3", "A vector that A rotates by 3 degrees", "The third column of the matrix A"], answer: 1, explain: "A·v = λ·v means A only scales v, without changing its direction. So v is an eigenvector, and λ = 3 is its eigenvalue." },
+      { q: "Keeping only the top-k singular values of a matrix gives you…", options: ["The k largest numbers stored in the matrix", "A matrix that is exactly k times smaller", "The best rank-k approximation of that matrix", "The first k rows of the original matrix"], answer: 2, explain: "SVD orders directions by importance; truncating to the top k gives the best possible low-rank approximation, the core of compression and PCA." },
+      { q: "Why can LoRA fine-tune a huge model with only a few new parameters?", options: ["It only updates the model's first layer", "It deletes most of the original weights", "Eigenvalues make the model file smaller", "Weight updates are often close to low-rank"], answer: 3, explain: "Large weight-update matrices are often approximately low-rank, so they can be represented as the product of two thin matrices." },
     ],
   },
 
@@ -232,9 +232,9 @@ ATLAS.addNodes([
       source: { title: "3Blue1Brown — Essence of Calculus", url: "https://www.3blue1brown.com/topics/calculus", note: "Visual, intuition-first introduction to derivatives." },
     },
     quiz: [
-      { q: "What does the derivative of the loss with respect to a weight tell you?", options: ["The final accuracy", "How much and in which direction the loss changes as that weight changes", "The number of layers", "The dataset size"], answer: 1, explain: "It is the local sensitivity of the loss to that weight — direction and steepness of change." },
-      { q: "If the derivative of the loss w.r.t. a parameter is positive, to reduce loss you should…", options: ["Increase the parameter", "Decrease the parameter", "Delete the parameter", "Do nothing"], answer: 1, explain: "Positive slope means increasing the parameter raises loss, so you move in the opposite (negative) direction." },
-      { q: "Why is the chain rule essential for neural networks?", options: ["Networks avoid composition", "A network is functions composed within functions, and the chain rule differentiates compositions", "It speeds up file I/O", "It replaces matrix multiply"], answer: 1, explain: "Backpropagation is the chain rule applied through many composed layers to get each parameter's gradient." },
+      { q: "The derivative of the loss with respect to a weight is +2.5. What should gradient descent do to that weight?", options: ["Increase it", "Decrease it", "Set it to 2.5", "Leave it unchanged"], answer: 1, explain: "A positive derivative means increasing the weight raises the loss, so step the opposite way: move each parameter against its derivative." },
+      { q: "What does a derivative measure?", options: ["The total area under a function's curve", "The largest value the function ever reaches", "The average of all of the function's outputs", "How much the output moves when the input nudges"], answer: 3, explain: "A derivative is the instantaneous rate of change, the slope: how sensitively the output responds to a tiny change in the input." },
+      { q: "Why is the chain rule essential for training neural networks?", options: ["It removes the need to compute derivatives", "It only applies to the network's last layer", "A network is functions nested inside functions", "It makes the loss function convex"], answer: 2, explain: "Networks compose many functions. The chain rule gives the derivative of a composition as the product of the local derivatives along the way." },
     ],
   },
 
@@ -271,9 +271,9 @@ ATLAS.addNodes([
       source: { title: "3Blue1Brown — Backpropagation, intuitively", url: "https://www.youtube.com/watch?v=Ilg3gGewQ5U", note: "Connects the chain rule to how networks actually learn." },
     },
     quiz: [
-      { q: "The gradient of a multi-input function points in the direction of…", options: ["Steepest decrease", "Steepest increase", "No change", "Random noise"], answer: 1, explain: "By definition the gradient points toward steepest ascent; gradient descent therefore steps along its negative." },
-      { q: "Backpropagation is essentially which mathematical rule applied efficiently?", options: ["The quadratic formula", "The chain rule", "Bayes' theorem", "The Pythagorean theorem"], answer: 1, explain: "Backprop propagates derivatives through composed layers using the chain rule, reusing intermediate results." },
-      { q: "Repeatedly multiplying many small derivatives through deep layers causes…", options: ["Exploding gradients", "Vanishing gradients", "Faster convergence guaranteed", "More parameters"], answer: 1, explain: "Products of small numbers shrink toward zero, so early layers receive almost no learning signal — the vanishing gradient problem." },
+      { q: "In which direction does the gradient of the loss point?", options: ["Toward the steepest decrease in loss", "Toward the nearest local minimum", "Toward the steepest increase in loss", "Toward the origin of parameter space"], answer: 2, explain: "The gradient points toward the steepest increase, which is why training steps in the opposite direction, −∇loss." },
+      { q: "The early layers of a very deep network barely learn, because their gradients are near zero. What's this called?", options: ["Exploding gradients", "Vanishing gradients", "Overfitting", "Data leakage"], answer: 1, explain: "Multiplying many small local derivatives shrinks the signal toward zero. ReLU, residual connections and normalization were adopted partly to fix this." },
+      { q: "Training becomes unstable as gradients suddenly become enormous. What's a standard fix?", options: ["Removing the loss function", "Adding more layers", "Using a larger learning rate", "Gradient clipping"], answer: 3, explain: "Exploding gradients destabilize training. Clipping caps their size, and normalization helps keep signals in range." },
     ],
   },
 
@@ -307,9 +307,9 @@ ATLAS.addNodes([
       source: { title: "Seeing Theory (Brown University)", url: "https://seeing-theory.brown.edu/", note: "A visual, interactive introduction to probability and statistics." },
     },
     quiz: [
-      { q: "What does P(A | B) denote?", options: ["The probability of A and B both never happening", "The probability of A given that B has occurred", "The probability of B given A", "That A and B are independent"], answer: 1, explain: "The bar means 'given': P(A|B) is A's probability once B is known to have happened." },
-      { q: "A language model predicting the next token is computing which kind of probability?", options: ["Unconditional probability of a random word", "The conditional probability of the next token given the preceding context", "The probability the GPU fails", "A fixed 50% for every word"], answer: 1, explain: "LLMs model P(next token | previous tokens), a conditional distribution over the vocabulary." },
-      { q: "Two events are independent when…", options: ["They always happen together", "Knowing one gives no information about the other", "One causes the other", "They have the same probability"], answer: 1, explain: "Independence means P(A|B) = P(A): B carries no information about A." },
+      { q: "A language model computes P(next word | previous words). What kind of probability is that?", options: ["An independent probability", "A conditional probability", "A uniform probability", "A joint probability of all words"], answer: 1, explain: "P(A | B) is the probability of A given B. Next-token prediction is exactly this: the next word, given everything before it." },
+      { q: "Knowing it's raining doesn't change the chance of a coin landing heads. What does that mean?", options: ["The two events are mutually exclusive", "The coin has a 100% chance of heads", "The two events are independent", "Rain causes the coin to land heads"], answer: 2, explain: "Independence means P(A | B) = P(A): knowing one event tells you nothing about the other." },
+      { q: "Training a classifier by minimizing cross-entropy is equivalent to…", options: ["Minimizing the number of model parameters", "Making all predicted probabilities equal", "Maximizing the model's training speed", "Maximizing the likelihood of the labels"], answer: 3, explain: "Maximum likelihood picks the parameters that make the observed data most probable; minimizing cross-entropy is exactly that." },
     ],
   },
 
@@ -347,9 +347,9 @@ ATLAS.addNodes([
       source: { title: "Distribution Explorer", url: "https://distribution-explorer.github.io/", note: "Reference and intuition for the standard probability distributions." },
     },
     quiz: [
-      { q: "What does the softmax function produce from a vector of logits?", options: ["A single integer label", "A probability distribution that sums to 1", "The gradient", "A sorted list only"], answer: 1, explain: "Softmax exponentiates and normalizes logits into non-negative values summing to 1 — a categorical distribution." },
-      { q: "Raising the sampling temperature of an LLM tends to make outputs…", options: ["More deterministic and repetitive", "More diverse and random", "Shorter always", "Grammatically incorrect always"], answer: 1, explain: "Higher temperature flattens the distribution, spreading probability and increasing variety (and risk)." },
-      { q: "Which distribution models a single binary (yes/no) outcome?", options: ["Gaussian", "Bernoulli", "Uniform over 100 values", "Exponential"], answer: 1, explain: "The Bernoulli distribution describes one trial with two outcomes and probability p of success." },
+      { q: "What does softmax do to a model's raw scores (logits)?", options: ["Sorts them and keeps only the highest one", "Rounds each of them to the nearest integer", "Turns them into probabilities that sum to 1", "Sets every negative score equal to zero"], answer: 2, explain: "Softmax exponentiates and normalizes the logits into a valid probability distribution. The largest gets the most probability, but every class gets some." },
+      { q: "You lower the sampling temperature from 1.0 to 0.2. What happens to the output distribution?", options: ["It flattens, so outputs get more varied and risky", "It sharpens, so outputs get safer and more repetitive", "It stays the same; temperature affects only speed", "It becomes uniform across the whole vocabulary"], answer: 1, explain: "Temperature rescales the logits before softmax. Low temperature sharpens the distribution toward the top choices; high temperature flattens it." },
+      { q: "A binary spam classifier outputs 'spam' with probability p. Which distribution describes that output?", options: ["Gaussian", "Uniform", "Categorical over 10 classes", "Bernoulli"], answer: 3, explain: "A single yes/no outcome with probability p is a Bernoulli distribution. Categorical covers several classes; Gaussian models continuous values." },
     ],
   },
 
@@ -386,9 +386,9 @@ ATLAS.addNodes([
       source: { title: "3Blue1Brown — Bayes' theorem", url: "https://www.youtube.com/watch?v=HZGCoVF3YvM", note: "A visual derivation and the base-rate intuition." },
     },
     quiz: [
-      { q: "In Bayes' theorem, the 'prior' represents…", options: ["Your belief after seeing the evidence", "Your belief before seeing the evidence", "The accuracy of the test", "The size of the dataset"], answer: 1, explain: "The prior P(H) is the initial plausibility of the hypothesis before evidence is incorporated." },
-      { q: "A very accurate test for a very rare condition returns positive. Why might you still probably not have it?", options: ["Tests are always wrong", "The low prior (rarity) means most positives can be false positives — the base-rate effect", "Bayes' theorem does not apply to medicine", "Accuracy is irrelevant"], answer: 1, explain: "When the condition is rare, even a small false-positive rate produces many false positives relative to true ones." },
-      { q: "Posterior probability is proportional to…", options: ["Prior divided by likelihood", "Likelihood times prior", "Evidence times posterior", "One minus the prior"], answer: 1, explain: "Bayes: posterior ∝ likelihood × prior (dividing by the evidence normalizes it)." },
+      { q: "A disease affects 1 in 1,000 people. A test is 99% accurate, and you test positive. What's most likely true?", options: ["You're 99% likely to have the disease", "You're probably still healthy; it's so rare", "The test result is meaningless and random", "You're exactly 50% likely to have the disease"], answer: 1, explain: "With a 1-in-1,000 base rate, false positives among the 999 healthy people far outnumber the true positives. Ignoring the prior is the base-rate fallacy." },
+      { q: "In Bayes' theorem, what is the prior?", options: ["How well the evidence fits the hypothesis", "The updated belief after seeing the evidence", "The total probability of the evidence itself", "How plausible the hypothesis was beforehand"], answer: 3, explain: "Posterior = likelihood × prior / evidence. The prior is your starting plausibility; the likelihood is how well the hypothesis predicts the evidence." },
+      { q: "How do Bayesian methods treat a model's parameters?", options: ["As fixed values chosen once, with no uncertainty", "As random noise that should be ignored", "As distributions that capture uncertainty", "As labels that must be provided by humans"], answer: 2, explain: "Bayesian inference represents parameters as probability distributions rather than single point estimates, so uncertainty is explicit." },
     ],
   },
 
@@ -422,9 +422,9 @@ ATLAS.addNodes([
       source: { title: "Seeing Theory — Statistical Inference", url: "https://seeing-theory.brown.edu/frequentist-inference/index.html", note: "Interactive sampling, estimation, and significance." },
     },
     quiz: [
-      { q: "Why is the median often preferred over the mean for skewed data?", options: ["It is faster to compute", "It is more robust to outliers", "It is always larger", "It requires no data"], answer: 1, explain: "Extreme values pull the mean but barely move the median, so the median better represents the center of skewed data." },
-      { q: "A confidence interval expresses…", options: ["The exact true value", "A plausible range for the true value given sampling uncertainty", "The number of samples", "The model's accuracy"], answer: 1, explain: "It quantifies uncertainty from sampling, giving a range within which the true parameter plausibly falls." },
-      { q: "A small p-value in an A/B test suggests that…", options: ["The effect is definitely huge", "The observed difference is unlikely to be due to chance alone", "The sample was too small", "The two versions are identical"], answer: 1, explain: "A small p-value means such an extreme result would be unlikely if there were no real effect — evidence against 'no difference'." },
+      { q: "Household incomes in your sample are heavily skewed by a few billionaires. Which statistic best describes a typical household?", options: ["The mean", "The median", "The maximum", "The variance"], answer: 1, explain: "The median resists outliers; a few extreme values drag the mean far from what's typical." },
+      { q: "You quadruple your sample size. What happens to the standard error of your estimate?", options: ["It quadruples", "It stays the same", "It roughly halves", "It doubles"], answer: 2, explain: "Standard error shrinks with the square root of the sample size, so four times the data halves it. More data, tighter estimates." },
+      { q: "An A/B test gives p = 0.03. What does that mean?", options: ["There is a 3% chance the new version is better", "The new version is 3% better than the old one", "There is a 97% chance the change caused the effect", "Results this extreme are rare if there's no effect"], answer: 3, explain: "A p-value is the probability of a result at least this extreme if there were truly no effect. It isn't the probability that the change works, a very common misreading." },
     ],
   },
 
@@ -457,9 +457,9 @@ ATLAS.addNodes([
       source: { title: "Boyd & Vandenberghe — Convex Optimization", url: "https://web.stanford.edu/~boyd/cvxbook/", note: "The free reference text; skim ch.1 for the framing." },
     },
     quiz: [
-      { q: "In machine learning, what is being minimized during training?", options: ["The number of parameters", "The loss (a measure of the model's error)", "The learning rate", "The dataset size"], answer: 1, explain: "Training searches for parameters that minimize the loss function — the model's total error signal." },
-      { q: "What characterizes a convex optimization problem?", options: ["Many local minima and saddle points", "A single global minimum where going downhill always reaches the best solution", "No solution exists", "It requires no gradients"], answer: 1, explain: "Convex objectives are bowl-shaped with one global minimum, so gradient descent is guaranteed to find it." },
-      { q: "Why is training done iteratively with small steps rather than solved directly?", options: ["To waste compute", "Because with millions of parameters there is no practical closed-form solution", "Because gradients don't exist", "Because loss is always zero"], answer: 1, explain: "High-dimensional, non-convex objectives have no closed-form minimum, so we descend iteratively using gradients." },
+      { q: "Why does logistic regression reliably reach its best solution, while deep networks may not?", options: ["It uses far more training data than deep nets", "Its loss is convex, with a single global minimum", "Deep networks have no loss function at all", "Logistic regression never uses gradients"], answer: 1, explain: "A convex, bowl-shaped loss has one global minimum, so going downhill always works. Deep networks are non-convex, yet still train well in practice." },
+      { q: "Why is a model with millions of parameters trained iteratively rather than solved in one step?", options: ["Iteration always finds the global minimum", "One-step solutions are banned in ML libraries", "The loss changes each time you look at it", "Solving directly isn't feasible at that scale"], answer: 3, explain: "With millions of parameters there's no practical closed-form solution, so training takes many small, gradient-guided steps downhill." },
+      { q: "Gradient descent on a deep network rarely gets permanently stuck. What's part of the reason?", options: ["Deep network losses are always perfectly convex", "The learning rate automatically becomes zero", "Most bad points in high dimensions are saddles", "Every local minimum is exactly the global one"], answer: 2, explain: "In very high dimensions most bad critical points are saddle points you can escape, and many local minima are nearly as good as the global one." },
     ],
   },
 
@@ -492,9 +492,9 @@ ATLAS.addNodes([
       source: { title: "Andrej Karpathy — micrograd / building backprop", url: "https://www.youtube.com/watch?v=VMj-3S1tku0", note: "Builds gradient descent and backprop from scratch, by hand." },
     },
     quiz: [
-      { q: "In the update θ ← θ − η·∇loss, why is there a minus sign?", options: ["To increase the loss", "Because the gradient points uphill, so we step the opposite way to descend", "It is a typo", "To normalize the parameters"], answer: 1, explain: "The gradient points toward steepest increase; subtracting it moves parameters toward lower loss." },
-      { q: "What typically happens if the learning rate is set far too high?", options: ["Training is slow but stable", "Training overshoots and can diverge instead of converging", "The model needs no data", "Nothing changes"], answer: 1, explain: "Large steps overshoot the minimum and can bounce out of the valley, causing divergence or oscillation." },
-      { q: "Why do we use mini-batches instead of the full dataset for each gradient step?", options: ["To get a slower algorithm", "Full-dataset gradients are too expensive; mini-batches are cheaper and their noise even helps optimization", "Mini-batches guarantee the global minimum", "The full dataset has no gradient"], answer: 1, explain: "Mini-batches make each step affordable and add helpful stochasticity that can escape poor regions of the landscape." },
+      { q: "Your training loss bounces around wildly, then shoots up to infinity. What's the most likely culprit?", options: ["The learning rate is far too low", "The learning rate is far too high", "The batch size is exactly 32", "The loss function is convex"], answer: 1, explain: "Steps that are too large overshoot the minimum and can diverge. Lower the learning rate, or add a warmup and decay schedule." },
+      { q: "In θ ← θ − η·∇loss, why is there a minus sign?", options: ["It keeps every parameter value negative over time", "It cancels out the effect of the learning rate", "It makes each new step larger than the last one", "The gradient points uphill; we step the other way"], answer: 3, explain: "The gradient points toward the steepest increase in loss, so subtracting it moves the parameters downhill." },
+      { q: "Why train on mini-batches rather than the full dataset at each step?", options: ["Mini-batches always reach the global minimum", "The full dataset doesn't have a gradient", "Steps are cheaper, and the noise helps escape", "Mini-batches remove the need for a learning rate"], answer: 2, explain: "Full-dataset gradients are expensive. Mini-batch estimates make each step affordable, and their noise helps escape poor regions of the loss landscape." },
     ],
   },
 
@@ -527,9 +527,9 @@ ATLAS.addNodes([
       source: { title: "Claude Shannon — A Mathematical Theory of Communication", url: "https://people.math.harvard.edu/~ctm/home/text/others/shannon/entropy/entropy.pdf", note: "The founding 1948 paper; even skimming the intro is worthwhile." },
     },
     quiz: [
-      { q: "Entropy is highest when a distribution is…", options: ["Concentrated on one certain outcome", "Spread out / uniform across many equally likely outcomes", "Empty", "Negative"], answer: 1, explain: "Maximum uncertainty (uniform outcomes) means maximum average surprise, hence maximum entropy." },
-      { q: "What does cross-entropy loss heavily penalize?", options: ["Being confidently correct", "Being confidently wrong", "Making no prediction", "Using a GPU"], answer: 1, explain: "Cross-entropy grows large when the model assigns high probability to the wrong answer — confident mistakes cost the most." },
-      { q: "In RLHF, KL divergence is commonly used to…", options: ["Increase the learning rate", "Keep the fine-tuned model from drifting too far from the original model", "Delete training data", "Measure GPU temperature"], answer: 1, explain: "A KL penalty constrains the updated policy to stay close to the reference model, preventing reward hacking and collapse." },
+      { q: "Which has the higher entropy: a fair coin, or a coin that lands heads 99% of the time?", options: ["The 99% heads coin", "They're equal", "The fair coin", "Neither has any entropy"], answer: 2, explain: "Entropy is average surprise. A fair coin is maximally uncertain (1 bit); a coin that almost always lands heads is rarely surprising." },
+      { q: "A classifier puts 95% probability on the wrong class. How does cross-entropy loss respond?", options: ["The loss is zero, since it made a confident call", "The loss is high; confident mistakes are punished", "The loss is low, since 95% is a high probability", "Cross-entropy ignores how confident a model was"], answer: 1, explain: "Cross-entropy measures surprise at the true answer under the model's prediction. Confidently wrong means a tiny probability on the truth, and so a large loss." },
+      { q: "In RLHF, what is a KL-divergence penalty used for?", options: ["Making the reward model train much faster", "Shrinking the tokenizer's vocabulary size", "Increasing the model's context window", "Keeping the tuned model near the original"], answer: 3, explain: "KL divergence measures how far one distribution is from another. In RLHF it stops the fine-tuned model drifting too far from where it started." },
     ],
   },
 ]);

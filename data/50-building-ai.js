@@ -33,9 +33,9 @@ ATLAS.addNodes([
       source: { title: "Andrej Karpathy — Intro to Large Language Models", url: "https://www.youtube.com/watch?v=zjkBMFhNj_g", note: "A one-hour, high-signal overview of what LLMs are." },
     },
     quiz: [
-      { q: "At its core, an LLM is trained to…", options: ["Look up answers in a database", "Predict the next token given the preceding context", "Sort words alphabetically", "Compress images"], answer: 1, explain: "LLMs are next-token predictors; their broad abilities emerge from mastering that single objective." },
-      { q: "Why can an LLM be confidently wrong (hallucinate)?", options: ["It queries the wrong website", "Its knowledge is baked into weights, not looked up, so it can generate plausible-but-false text", "It always tells the truth", "It runs out of memory"], answer: 1, explain: "Knowledge is encoded in parameters; the model generates likely continuations, which can be fluent yet false." },
-      { q: "Which step turns a raw pretrained predictor into a helpful assistant?", options: ["Tokenization", "Post-training: instruction tuning and RLHF", "Quantization", "Data cleaning"], answer: 1, explain: "Instruction tuning and RLHF align the base model to follow instructions helpfully and safely." },
+      { q: "A user asks why an LLM confidently cited a paper that doesn't exist. What's the best explanation?", options: ["It searched a database that contained a bad entry", "It predicts plausible text from its weights", "It copied the citation from another user's chat", "Its safety training requires citing some source"], answer: 1, explain: "An LLM has no lookup table. It generates likely next tokens from knowledge compressed into its weights, so it can produce confident, plausible fabrications." },
+      { q: "What single objective is an LLM pretrained on?", options: ["Answering questions with human-verified answers", "Classifying text as helpful or harmful", "Predicting the next token in a piece of text", "Translating between pairs of languages"], answer: 2, explain: "Pretraining is next-token prediction over huge text corpora. Answering questions, coding and translation emerge from doing that very well." },
+      { q: "Which step turns a raw next-token predictor into a helpful assistant?", options: ["More pretraining on an even larger dataset", "Increasing the context window at inference", "Running it at a lower sampling temperature", "Post-training: instruction tuning and RLHF"], answer: 3, explain: "Pretraining gives knowledge and fluency. Post-training (instruction tuning, then RLHF) teaches the model to follow instructions helpfully and safely." },
     ],
   },
 
@@ -70,9 +70,9 @@ ATLAS.addNodes([
       source: { title: "Karpathy — Let's build the GPT Tokenizer", url: "https://www.youtube.com/watch?v=zduSFxRajkE", note: "Builds BPE tokenization from scratch and explains the quirks." },
     },
     quiz: [
-      { q: "LLMs typically process text as…", options: ["Whole sentences", "Sub-word tokens (e.g. byte-pair encoding)", "Raw pixels", "SQL rows"], answer: 1, explain: "Sub-word tokenization balances sequence length and vocabulary size, handling rare and novel words." },
-      { q: "Context windows and API pricing are measured in…", options: ["Words", "Tokens", "Sentences", "Megabytes of RAM"], answer: 1, explain: "Both limits and costs are counted in tokens, roughly 4 English characters each." },
-      { q: "Why do LLMs struggle to count the letters in a word?", options: ["They lack memory", "They see tokens, not individual characters", "The GPU is too small", "Counting is disabled"], answer: 1, explain: "Tokenization hides individual letters, making character-level operations unreliable." },
+      { q: "A model miscounts the letters in 'strawberry'. What's the most likely cause?", options: ["It sees sub-word tokens, not individual letters", "Its context window is too short for the word", "It was never trained on that particular word", "Its temperature was set too high for counting"], answer: 0, explain: "The model reads sub-word tokens, so character-level tasks like counting or reversing letters are awkward for it. It's a tokenization artifact." },
+      { q: "A prompt is about 3,000 English words. Roughly how many tokens is that?", options: ["About 750 tokens", "About 3,000 tokens", "About 4,000 tokens", "About 12,000 tokens"], answer: 2, explain: "At roughly 4 characters per token, an average English word is about 1.3 tokens, so 3,000 words is around 4,000 tokens. Use the model's tokenizer for real budgets." },
+      { q: "Your app serves English and Hindi users with the same prompts. Why might the Hindi requests cost more?", options: ["Providers add a surcharge for non-English text", "The same idea often takes more tokens in Hindi", "Hindi responses are always longer in characters", "The model has to translate Hindi to English first"], answer: 1, explain: "Tokenizers are often trained mostly on English, so other languages (and code) can need more tokens per idea, which costs more and uses more context." },
     ],
   },
 
@@ -107,9 +107,9 @@ ATLAS.addNodes([
       source: { title: "Brown et al. — GPT-3: Language Models are Few-Shot Learners", url: "https://arxiv.org/abs/2005.14165", note: "The paper that showed scale unlocks emergent abilities." },
     },
     quiz: [
-      { q: "Pretraining an LLM uses which learning signal?", options: ["Human-labeled answers for every example", "Self-supervised next-token prediction on raw text", "A reward model", "Manual feature engineering"], answer: 1, explain: "Pretraining predicts the next token, deriving labels for free from the text itself." },
-      { q: "The direct output of pretraining is…", options: ["A helpful chat assistant", "A base model that is fluent/knowledgeable but not yet aligned to follow instructions", "A tokenizer", "A vector database"], answer: 1, explain: "Base models continue text well but need post-training to become helpful assistants." },
-      { q: "In the LLM lifecycle, pretraining is…", options: ["The cheapest step", "By far the most expensive step, done once", "Repeated for every user query", "Optional"], answer: 1, explain: "Pretraining dominates cost and is performed once; fine-tuning and inference are comparatively cheap." },
+      { q: "Why don't most companies pretrain their own frontier model?", options: ["Pretraining requires labeled data they lack", "Only open-source models can be pretrained", "Pretrained models can't be fine-tuned later", "It costs millions in data and compute"], answer: 3, explain: "Pretraining needs trillions of tokens and thousands of GPUs for weeks or months. A few labs do it once; everyone else builds on top." },
+      { q: "You prompt a base model (before any post-training) with 'What is the capital of France?'. What might it do?", options: ["Refuse, since it hasn't been safety-trained yet", "Answer 'Paris' in a friendly assistant tone", "Continue with more questions, as in a quiz list", "Return an error until it is instruction-tuned"], answer: 2, explain: "A base model just continues text. A list of questions is a plausible continuation, so it may write more questions instead of answering." },
+      { q: "Where do pretraining's 'labels' come from?", options: ["Human annotators rating each passage", "The next token in the text itself", "A smaller model that grades the text", "Search results matched to each page"], answer: 1, explain: "It's self-supervised: the text supervises itself. The target at each position is simply the token that comes next." },
     ],
   },
 
@@ -145,9 +145,9 @@ ATLAS.addNodes([
       source: { title: "Yann LeCun — Self-Supervised Learning (overview)", url: "https://ai.meta.com/blog/self-supervised-learning-the-dark-matter-of-intelligence/", note: "Why self-supervision is central to modern AI." },
     },
     quiz: [
-      { q: "Self-supervised learning obtains labels by…", options: ["Paying human annotators for each example", "Manufacturing them from the data's own structure (e.g. hiding and predicting part of the input)", "Using a reward model", "Randomly guessing"], answer: 1, explain: "It creates a pretext task whose targets come free from the unlabeled data itself." },
-      { q: "Masked-word prediction (BERT-style) is a form of…", options: ["Reinforcement learning", "Self-supervised learning", "Supervised learning with human labels", "Clustering"], answer: 1, explain: "The masked words serve as free labels derived from the text — self-supervision." },
-      { q: "The main reason self-supervised learning transformed AI is that it…", options: ["Needs less compute", "Removes the labeling bottleneck, enabling training on virtually unlimited data", "Avoids using neural networks", "Only works on small datasets"], answer: 1, explain: "Without needing human labels, it scales to internet-sized corpora and learns transferable representations." },
+      { q: "What lets self-supervised learning scale to internet-sized data?", options: ["Labels come from the data itself, not from people", "It uses much smaller models than supervised learning", "It only trains on carefully curated examples", "It skips training and relies on retrieval"], answer: 0, explain: "Hiding part of the input and predicting it creates labels for free, so there's no human-labeling bottleneck." },
+      { q: "How does BERT-style masked prediction differ from GPT-style next-token prediction?", options: ["It predicts the next word using only earlier text", "It needs humans to label which words to mask", "It predicts whole sentences instead of words", "It predicts hidden words from context on both sides"], answer: 3, explain: "Masked prediction blanks out words and predicts them from context on both sides. Next-token prediction only looks at what came before." },
+      { q: "Why do representations learned this way transfer to so many other tasks?", options: ["The pretext task is secretly the same as every task", "Transfer only works when tasks share the same labels", "Solving the pretext task forces useful internal features", "The model memorizes answers to all common tasks"], answer: 2, explain: "To predict hidden parts well, the model must learn real structure in language or images, and those representations are useful far beyond the pretext task." },
     ],
   },
 
@@ -181,9 +181,9 @@ ATLAS.addNodes([
       source: { title: "Hu et al. — LoRA: Low-Rank Adaptation", url: "https://arxiv.org/abs/2106.09685", note: "The parameter-efficient fine-tuning method now widely used." },
     },
     quiz: [
-      { q: "Fine-tuning an LLM means…", options: ["Training it from scratch", "Continuing training a pretrained model on task-specific data to adapt it", "Only changing the prompt", "Compressing the model"], answer: 1, explain: "Fine-tuning updates a pretrained model's weights on a smaller targeted dataset." },
-      { q: "LoRA reduces fine-tuning cost by…", options: ["Updating all weights faster", "Freezing the base model and training small low-rank adapter matrices", "Removing the dataset", "Skipping gradients"], answer: 1, explain: "LoRA trains a tiny number of added parameters, leaving the base weights frozen — cheap and swappable." },
-      { q: "To give a model up-to-date factual knowledge, the usually better tool is…", options: ["Full fine-tuning", "RAG (retrieval-augmented generation)", "Quantization", "Tokenization"], answer: 1, explain: "RAG injects fresh knowledge at query time; fine-tuning bakes data in statically and risks forgetting." },
+      { q: "You need 20 differently fine-tuned variants of one model, one per customer, cheaply. What's the best approach?", options: ["Full fine-tuning of 20 separate full-size copies", "LoRA adapters: small per-customer add-ons, one base", "One giant prompt containing all 20 customers' rules", "Pretraining a new base model for each customer"], answer: 1, explain: "LoRA/PEFT freezes the base model and trains tiny adapters, giving most of the benefit at a fraction of the cost and storage, with an adapter per task." },
+      { q: "Which goal is fine-tuning best suited for?", options: ["Answering questions about this week's sales figures", "Looking up a customer's order status in real time", "Citing the exact source behind each answer given", "A consistent house style across thousands of outputs"], answer: 3, explain: "Fine-tuning shines for consistent style, format or narrow skills. Fresh facts, live data and citations are jobs for RAG and tools." },
+      { q: "What's a known risk of fine-tuning a model heavily on a narrow dataset?", options: ["It permanently doubles the model's inference cost", "It removes the model's ability to follow prompts", "It can forget some of its general abilities", "It makes the model's context window shorter"], answer: 2, explain: "Training hard on narrow data can make the model forget broader skills, and it bakes information in statically. That's part of why you prompt first and use RAG for knowledge." },
     ],
   },
 
@@ -219,9 +219,9 @@ ATLAS.addNodes([
       source: { title: "Ouyang et al. — InstructGPT", url: "https://arxiv.org/abs/2203.02155", note: "The paper introducing instruction tuning + RLHF for assistants." },
     },
     quiz: [
-      { q: "Instruction tuning fixes the problem that a base model…", options: ["Runs too slowly", "Continues text rather than following the user's request", "Has no knowledge", "Cannot be deployed"], answer: 1, explain: "Base models autocomplete; instruction tuning teaches the behavior of responding to instructions helpfully." },
-      { q: "Instruction tuning is implemented as…", options: ["Reinforcement learning from rewards", "Supervised fine-tuning on (instruction, good-response) demonstrations", "Pretraining from scratch", "Quantization"], answer: 1, explain: "It's SFT on curated instruction–response pairs the model learns to imitate." },
-      { q: "In the training pipeline, instruction tuning comes…", options: ["Before pretraining", "After pretraining and before RLHF", "After deployment", "Instead of tokenization"], answer: 1, explain: "The order is pretraining → instruction tuning (SFT) → RLHF/preference tuning." },
+      { q: "What data is used for instruction tuning?", options: ["Raw web text with no particular structure to it", "Pairs of instructions and high-quality responses", "Human rankings that compare two model responses", "Collections of harmful prompts it should refuse"], answer: 1, explain: "Instruction tuning is supervised fine-tuning on curated (instruction, good response) demonstrations. Pairwise rankings are what RLHF uses afterwards." },
+      { q: "Which order are these training stages done in?", options: ["Instruction tuning → pretraining → RLHF", "RLHF → pretraining → instruction tuning", "Pretraining → RLHF → instruction tuning", "Pretraining → instruction tuning → RLHF"], answer: 3, explain: "Pretraining builds knowledge and fluency, instruction tuning establishes assistant behavior, and RLHF polishes helpfulness, harmlessness and tone." },
+      { q: "What does instruction tuning mainly add to a base model?", options: ["The habit of responding helpfully to requests", "Most of the facts it knows about the world", "The ability to read much longer documents at once", "Faster generation of each token it outputs"], answer: 0, explain: "Knowledge comes from pretraining. Instruction tuning teaches the behavior: treating input as a request and answering it helpfully in a good format." },
     ],
   },
 
@@ -257,9 +257,9 @@ ATLAS.addNodes([
       source: { title: "Ouyang et al. — Training LMs to follow instructions with human feedback", url: "https://arxiv.org/abs/2203.02155", note: "The canonical RLHF paper (InstructGPT)." },
     },
     quiz: [
-      { q: "RLHF is needed because…", options: ["Humans can't judge responses", "'Good' is hard to specify with a loss, but humans can easily compare which response is better", "Base models are already aligned", "It reduces model size"], answer: 1, explain: "RLHF leverages easy human preference comparisons to define quality that a fixed loss can't capture." },
-      { q: "The reward model in RLHF is trained to…", options: ["Generate text", "Predict which response humans would prefer, producing a score", "Tokenize input", "Compress the model"], answer: 1, explain: "The reward model turns human preference comparisons into a scalar reward the policy optimizes toward." },
-      { q: "A known failure mode induced by RLHF is…", options: ["Faster inference", "Sycophancy — telling users what they want to hear", "Better tokenization", "Lower cost"], answer: 1, explain: "Optimizing for human approval can teach the model to be agreeable rather than accurate — sycophancy." },
+      { q: "Why does RLHF collect comparisons ('which response is better?') rather than hand-written scores?", options: ["Comparisons need no human involvement at all", "Scores can't be used to train neural networks", "People judge comparisons easily and consistently", "Comparisons make the model's outputs shorter"], answer: 2, explain: "'Good' is hard to specify directly, but people can easily say which of two responses is better. RLHF turns those comparisons into a reward signal." },
+      { q: "Your assistant agrees with whatever the user claims, even when the user is wrong. Which RLHF side effect is this?", options: ["Over-refusal", "Hallucination", "Overfitting", "Sycophancy"], answer: 3, explain: "Optimizing for human approval can teach a model to tell people what they want to hear. Over-refusal and reward hacking are other known pitfalls." },
+      { q: "What does DPO change compared with classic RLHF?", options: ["It removes the need for any human preference data", "It skips the separate reward model and RL loop", "It trains the base model from scratch on preferences", "It replaces preferences with hand-written rules"], answer: 1, explain: "DPO and similar methods optimize the model on preference pairs directly, reaching RLHF's goal without a separate reward model and RL loop." },
     ],
   },
 
@@ -294,9 +294,9 @@ ATLAS.addNodes([
       source: { title: "Hoffmann et al. — Training Compute-Optimal LLMs (Chinchilla)", url: "https://arxiv.org/abs/2203.15556", note: "The compute-optimal scaling result." },
     },
     quiz: [
-      { q: "Scaling laws describe how model performance changes as you increase…", options: ["Only the number of GPUs", "Parameters, data, and compute together — predictably", "The prompt length only", "The number of employees"], answer: 1, explain: "Loss falls along smooth power laws as parameters, data, and compute scale jointly." },
-      { q: "The Chinchilla finding was that many large models were…", options: ["Overtrained on too much data", "Undertrained — they needed more data relative to their size", "Perfectly balanced", "Too small to matter"], answer: 1, explain: "For a given compute budget, optimal training uses more data (and often fewer parameters) than earlier giants used." },
-      { q: "'Emergent abilities' refers to capabilities that…", options: ["Exist in every model size", "Appear only once a model passes a certain scale", "Come from tokenization", "Are manually programmed"], answer: 1, explain: "Certain capabilities seem to switch on beyond a scale threshold rather than improving smoothly." },
+      { q: "What did scaling-law research show about LLM loss?", options: ["It stops improving once models pass a billion parameters", "It depends mostly on the choice of tokenizer", "It rises when models are trained on more data", "It falls predictably as parameters, data, and compute grow"], answer: 3, explain: "Loss follows smooth power laws as parameters, data and compute scale together, which made progress forecastable." },
+      { q: "The Chinchilla result showed that many earlier large models were…", options: ["Overtrained: they saw far more data than they needed", "Undertrained: too many parameters for too little data", "Too small to benefit from any more training data", "Limited mainly by the length of their context"], answer: 1, explain: "For a fixed compute budget there's an optimal balance of size and data. Earlier giants would have done better with fewer parameters and far more data." },
+      { q: "Why is 'just scale it up' getting harder as a strategy?", options: ["Larger models can no longer be trained on GPUs", "Scaling laws turned out to be measurement errors", "Good data is finite and gains per dollar shrink", "Bigger models always need shorter context windows"], answer: 2, explain: "High-quality data runs out and returns diminish, which is pushing work on efficiency, better data, and post-training." },
     ],
   },
 
@@ -331,9 +331,9 @@ ATLAS.addNodes([
       source: { title: "Liu et al. — Lost in the Middle", url: "https://arxiv.org/abs/2307.03172", note: "How models use (and misuse) long contexts." },
     },
     quiz: [
-      { q: "The context window defines…", options: ["The model's parameter count", "The maximum tokens (prompt + output) the model can attend to at once", "The number of GPUs", "The training data size"], answer: 1, explain: "It's the working-memory budget: everything the model considers in one call must fit within it." },
-      { q: "Long context windows are expensive largely because attention cost scales…", options: ["Linearly with length", "Quadratically with sequence length", "Not at all", "With the number of users"], answer: 1, explain: "Standard self-attention is O(n²) in sequence length, so long contexts cost sharply more." },
-      { q: "The 'lost in the middle' effect means models tend to…", options: ["Ignore the beginning of the prompt", "Attend best to the start and end, neglecting the middle of long contexts", "Only read the middle", "Forget the system prompt"], answer: 1, explain: "Information buried in the middle of a long context is often under-attended compared to the edges." },
+      { q: "A chatbot 'forgets' the user's name after a long conversation. What's the basic reason?", options: ["The model deliberately discards personal data", "Early turns fell outside the context window", "Names are tokenized in a way it can't store", "Its weights were updated during the chat"], answer: 1, explain: "Anything outside the window doesn't exist to the model. Long chats need summarizing or external memory to keep key facts in view." },
+      { q: "Why is doubling the context length expensive with standard attention?", options: ["Each extra token has to be stored twice in memory", "Longer contexts require retraining the model", "Providers charge double for tokens past a limit", "Attention cost grows roughly with length squared"], answer: 3, explain: "Standard attention compares every token with every other one, so compute and memory scale quadratically: doubling the length roughly quadruples the attention cost." },
+      { q: "What counts against a model's context window in a single call?", options: ["Only the latest user message and the reply", "Only the input; the output has a separate budget", "System prompt, history, retrieved docs, and output", "Only text; images and tool results are free"], answer: 2, explain: "The window covers everything in the call: system prompt, conversation, retrieved documents, tool results, and the answer being generated." },
     ],
   },
 
@@ -369,9 +369,9 @@ ATLAS.addNodes([
       source: { title: "Hugging Face — How to generate text (decoding strategies)", url: "https://huggingface.co/blog/how-to-generate", note: "Greedy, beam, sampling, top-k, and top-p compared." },
     },
     quiz: [
-      { q: "LLMs generate text by…", options: ["Producing the whole answer in one step", "Autoregressively predicting one token at a time, appending, and repeating", "Retrieving it from a database", "Sorting the vocabulary"], answer: 1, explain: "Each token needs a forward pass; the model builds the output token by token." },
-      { q: "Lowering the temperature makes outputs…", options: ["More random and diverse", "More focused and deterministic", "Longer automatically", "Grammatically wrong"], answer: 1, explain: "Low temperature sharpens the distribution toward the most likely tokens, reducing randomness." },
-      { q: "Why can the same prompt produce different answers across calls?", options: ["The model changes size", "Sampling introduces randomness in token selection", "The GPU restarts", "The prompt is deleted"], answer: 1, explain: "When sampling (temperature > 0), token choices are stochastic, so outputs vary." },
+      { q: "You need the same structured extraction every time for the same input. Which setting fits?", options: ["High temperature for more robust output", "Low temperature or greedy decoding", "A large top-k to widen the token choices", "A long max-tokens limit on every call"], answer: 1, explain: "Low temperature (or greedy decoding) makes output focused and reproducible. Higher temperature and wider sampling add variety, which you don't want here." },
+      { q: "Why does a response with 1,000 output tokens take much longer than one with 100?", options: ["Long outputs are checked by a safety model first", "The prompt is re-read once per output sentence", "Longer outputs switch to a slower backup model", "Each output token needs its own forward pass"], answer: 3, explain: "Generation is autoregressive: one token per forward pass, appended, then repeat. Output length drives latency and cost." },
+      { q: "Top-p (nucleus) sampling improves outputs by…", options: ["Sampling only from the most probable tokens", "Always choosing the single most likely token", "Re-ranking finished answers by their quality", "Making every token equally likely to appear"], answer: 0, explain: "Top-p samples from the smallest set of tokens that covers most of the probability, cutting off the unlikely tail while keeping variety. Always taking the top token is greedy decoding." },
     ],
   },
 
@@ -408,9 +408,9 @@ ATLAS.addNodes([
       source: { title: "Hugging Face — Quantization overview", url: "https://huggingface.co/docs/transformers/main/en/quantization/overview", note: "Practical quantization methods and trade-offs." },
     },
     quiz: [
-      { q: "Quantization reduces a model's cost by…", options: ["Adding more parameters", "Representing weights with fewer bits (lower numerical precision)", "Deleting layers randomly", "Increasing the context window"], answer: 1, explain: "Fewer bits per weight cut memory and speed up computation, with modest quality loss." },
-      { q: "Quantization works well because neural networks are…", options: ["Extremely sensitive to any numerical change", "Fairly robust to small amounts of numerical noise", "Unable to use integers", "Only trained in 4-bit"], answer: 1, explain: "Networks tolerate lower precision, so accuracy drops little while efficiency improves." },
-      { q: "Distillation improves efficiency by…", options: ["Making the model bigger", "Training a small student model to mimic a large teacher", "Adding more data at inference", "Increasing precision"], answer: 1, explain: "Distillation transfers a large model's behavior into a smaller, cheaper one." },
+      { q: "You need a 70B-parameter model to fit on a smaller GPU with little quality loss. What's the first technique to try?", options: ["Double the size of its context window", "Raise the temperature when sampling", "Quantize its weights to 8 or 4 bits", "Add more experts inside each layer"], answer: 2, explain: "Storing weights in fewer bits cuts memory 2–4× and speeds up inference, usually with only a small loss in quality." },
+      { q: "Why can networks often be quantized with little accuracy loss?", options: ["They tolerate small amounts of numerical noise", "Most of their weights are exactly zero anyway", "Quantization retrains the model from scratch", "Lower precision makes their math more exact"], answer: 0, explain: "Neural networks are robust to a bit of numerical noise. Push precision too low, though, and quality degrades, so it's a trade-off you tune." },
+      { q: "Training a small model to imitate a large model's outputs is called…", options: ["Pruning", "Distillation", "Quantization", "Speculative decoding"], answer: 1, explain: "Distillation trains a small 'student' to mimic a large 'teacher'. Pruning removes weights, quantization lowers precision, and speculative decoding speeds up serving." },
     ],
   },
 
@@ -445,9 +445,9 @@ ATLAS.addNodes([
       source: { title: "Shazeer et al. — Outrageously Large Neural Networks (MoE)", url: "https://arxiv.org/abs/1701.06538", note: "The paper introducing sparsely-gated mixture of experts." },
     },
     quiz: [
-      { q: "In a Mixture-of-Experts model, each token is processed by…", options: ["Every parameter in the model", "Only a few expert sub-networks chosen by a router", "A random tree", "No parameters"], answer: 1, explain: "A router sends each token to a small subset of experts — sparse activation." },
-      { q: "The main benefit of MoE is…", options: ["Fewer total parameters", "Large total capacity with low active compute per token", "No need for routing", "Smaller memory footprint"], answer: 1, explain: "MoE grows total capacity while keeping per-token compute low by activating few experts." },
-      { q: "A key downside of MoE is that…", options: ["It uses no memory", "All experts must be kept in memory even though few are active per token", "It cannot be trained", "It removes attention"], answer: 1, explain: "Sparse compute doesn't reduce memory — every expert must be loaded, making serving memory-heavy." },
+      { q: "How does a Mixture-of-Experts model keep per-token compute low?", options: ["It uses a much smaller vocabulary than dense models", "It skips attention for most tokens in a sequence", "It stores its weights in 4-bit precision", "A router sends each token to only a few experts"], answer: 3, explain: "Sparse activation: there are many expert sub-networks, but each token uses only a few, so total capacity is large while active compute stays small." },
+      { q: "What's a practical drawback of serving an MoE model?", options: ["It can only answer one question at a time", "It cannot be fine-tuned after training", "All experts must be kept in memory", "Its outputs are always less accurate"], answer: 2, explain: "Even though only a few experts are active per token, all of them must be loaded, so MoE models are memory-heavy to serve." },
+      { q: "What goes wrong if an MoE router isn't balanced during training?", options: ["Every token gets sent to every expert at once", "Some experts get overused while others barely learn", "The model loses the ability to use attention", "The vocabulary shrinks with every training step"], answer: 1, explain: "Routing must be learned and load-balanced. Otherwise a few experts get overused while others starve, wasting capacity." },
     ],
   },
 
@@ -482,9 +482,9 @@ ATLAS.addNodes([
       source: { title: "Radford et al. — CLIP: Learning Transferable Visual Models", url: "https://arxiv.org/abs/2103.00020", note: "Foundational work aligning image and text embeddings." },
     },
     quiz: [
-      { q: "Multimodal models handle different data types by…", options: ["Using a separate unrelated model for each", "Mapping each modality into a shared embedding space one transformer can process", "Converting everything to SQL", "Ignoring all but text"], answer: 1, explain: "Images, audio, and text become embeddings in a common space, letting a single model reason across them." },
-      { q: "CLIP is notable for…", options: ["Compressing models", "Aligning image and text embeddings so they share a space", "Tokenizing code", "Doing reinforcement learning"], answer: 1, explain: "CLIP learned a joint image–text embedding space, foundational for multimodal understanding." },
-      { q: "For an AI engineer, a practical consideration with images in a multimodal model is that they…", options: ["Are free of cost", "Consume context tokens and must be budgeted like text", "Cannot be used in prompts", "Never affect latency"], answer: 1, explain: "Encoded images take up context tokens, so they factor into context limits and cost." },
+      { q: "How does a multimodal LLM 'read' an image alongside text?", options: ["It converts the image to a text caption first", "It stores the image in a separate database", "It's encoded into embeddings in the context", "It reads the image's file name and metadata"], answer: 2, explain: "A vision encoder turns the image into embeddings that sit in the model's context next to text tokens, so attention can relate words to image regions." },
+      { q: "What did CLIP popularize?", options: ["Aligning image and text embeddings in one space", "Generating images from noise with diffusion", "Compressing images into fewer pixels for speed", "Labeling images by hand at very large scale"], answer: 0, explain: "CLIP trained image and text encoders so that matching pairs land close together in a shared embedding space, which many multimodal systems build on." },
+      { q: "You add screenshots to a support assistant's prompts. What should you watch?", options: ["Images can't be used together with RAG or tools", "Screenshots switch off the system prompt", "Multimodal models can't read text in images", "Images consume context tokens and add cost"], answer: 3, explain: "Each modality consumes context. The usual prompt, RAG and agent patterns still apply; you just budget for richer inputs." },
     ],
   },
 
@@ -519,9 +519,9 @@ ATLAS.addNodes([
       source: { title: "Wei et al. — Emergent Abilities of Large Language Models", url: "https://arxiv.org/abs/2206.07682", note: "The paper cataloguing emergent abilities (and see critiques)." },
     },
     quiz: [
-      { q: "In-context learning refers to a model's ability to…", options: ["Update its weights during a chat", "Perform a new task from examples in the prompt, with no weight changes", "Retrain overnight", "Store data permanently"], answer: 1, explain: "Few-shot examples in the prompt let the model do a task without any parameter updates — in-context learning." },
-      { q: "Chain-of-thought prompting improves reasoning by…", options: ["Shrinking the model", "Having the model generate intermediate step-by-step reasoning", "Removing the prompt", "Lowering temperature to zero always"], answer: 1, explain: "Producing intermediate steps helps the model solve multi-step problems more reliably." },
-      { q: "Emergent abilities are called 'emergent' because they…", options: ["Are hard-coded in small models", "Appear only once models reach sufficient scale, without being explicitly trained", "Come from the tokenizer", "Require reinforcement learning to exist"], answer: 1, explain: "They show up at scale as a byproduct of large-scale training rather than direct programming." },
+      { q: "Few-shot prompting works because of which emergent ability?", options: ["Automatic fine-tuning during each conversation", "In-context learning from examples in the prompt", "Memorizing every example seen during training", "Retrieving similar examples from a database"], answer: 1, explain: "Large models can perform a new task from a few examples in the prompt, without any weight updates. That's in-context learning." },
+      { q: "A model struggles with a multi-step word problem. Which prompt change most often helps?", options: ["Ask it to answer in as few words as possible", "Ask it to answer faster with less thinking", "Ask it to reply only with the final number", "Ask it to reason step by step before answering"], answer: 3, explain: "Chain-of-thought prompting has the model write out intermediate reasoning, which markedly improves multi-step problems." },
+      { q: "What's the open debate about emergent abilities?", options: ["Whether large models can follow instructions at all", "Whether small models secretly have the same skills", "Whether they're true jumps or partly how we measure", "Whether prompting can bring out any of these skills"], answer: 2, explain: "Some argue emergence is partly an artifact of the metrics used. Either way, large models do things small ones can't, and prompting is how you elicit those abilities." },
     ],
   },
 ]);

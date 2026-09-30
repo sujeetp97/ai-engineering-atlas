@@ -36,9 +36,9 @@ ATLAS.addNodes([
       source: { title: "R. Peng & E. Matsui — The Art of Data Science (free)", url: "https://bookdown.org/rdpeng/artofdatascience/", note: "A concise, practitioner view of the data-science process." },
     },
     quiz: [
-      { q: "In most real AI projects, where does the majority of effort typically go?", options: ["Choosing an exotic model architecture", "Collecting, cleaning, and understanding the data", "Buying more GPUs", "Writing the final report"], answer: 1, explain: "Data collection and cleaning dominate real projects; data quality caps what any model can do." },
-      { q: "The phrase 'garbage in, garbage out' means…", options: ["Bigger models fix bad data", "A model trained on flawed data produces flawed results, however good the model", "Data should be deleted after use", "Outputs are always garbage"], answer: 1, explain: "Model outputs inherit the flaws of their training data; quality upstream is essential." },
-      { q: "Defining the success metric should happen…", options: ["After the model is built", "Early, when framing the question", "Never — accuracy is always the metric", "Only if the model fails"], answer: 1, explain: "Deciding what 'good' means up front keeps the whole project aimed at the right target." },
+      { q: "Your churn model underperforms. Following 'garbage in, garbage out', where should you look first?", options: ["A more exotic model architecture with more layers", "The quality of the data: labels, leakage, and bias", "A faster GPU so the model can train for longer", "A different programming language for the pipeline"], answer: 1, explain: "Most model problems are really data problems. Biased, leaky or mislabeled data caps what any model can achieve." },
+      { q: "What's the first step of a data-science project?", options: ["Training the most powerful model available", "Building a dashboard to share the results", "Framing the question and defining a success metric", "Collecting as much data as possible, of any kind"], answer: 2, explain: "Frame the question and decide what 'good' means before collecting or modeling. The metric shapes everything downstream." },
+      { q: "Which part of the typical workflow usually takes the most effort?", options: ["Tuning the model's hyperparameters", "Writing the final report for stakeholders", "Choosing between two similar model types", "Collecting and cleaning the data"], answer: 3, explain: "Gathering and cleaning data is usually the biggest chunk of the work, and it's what most determines the result." },
     ],
   },
 
@@ -74,9 +74,9 @@ ATLAS.addNodes([
       source: { title: "Google — Data Preparation and Feature Engineering (ML Crash Course)", url: "https://developers.google.com/machine-learning/data-prep", note: "Practical guidance on sourcing and sampling data." },
     },
     quiz: [
-      { q: "Selection bias occurs when…", options: ["The model has too many parameters", "The sample systematically differs from the population it should represent", "You collect too much data", "The learning rate is too high"], answer: 1, explain: "Selection bias means the collected sample is unrepresentative, so the model learns a skewed view." },
-      { q: "A face-recognition model trained mostly on one demographic will likely…", options: ["Work equally well for everyone", "Perform worse on under-represented groups", "Refuse to run", "Need no evaluation"], answer: 1, explain: "Under-representation in the data produces systematically worse performance on those groups." },
-      { q: "Which is a non-technical constraint on data collection?", options: ["Matrix multiplication cost", "Consent, privacy, and licensing obligations", "GPU memory", "Learning-rate schedules"], answer: 1, explain: "Legal and ethical obligations around consent, privacy, and licensing govern what data may be used." },
+      { q: "A skin-condition classifier is trained only on photos from one hospital, whose patients are mostly light-skinned. What's the core risk?", options: ["Overfitting: the photos are too high-resolution", "Selection bias: poor results for unseen groups", "Leakage: the hospital's name is in the file names", "None, as long as the model is large enough"], answer: 1, explain: "A non-representative sample becomes a blind spot. Better modeling can't repair it; the fix is at collection." },
+      { q: "You can technically scrape a site's user reviews to train a model. What should you check before using them?", options: ["Whether the reviews contain enough emojis", "Whether scraping is faster than an API", "Licensing, consent, and privacy obligations", "Only whether the dataset is large enough"], answer: 2, explain: "Not all data you can scrape is data you may use. Personal data and licensing carry legal and ethical obligations." },
+      { q: "A demand model trained on 2019 shopping behavior performs badly today. What collection issue is this?", options: ["The model has too few parameters for 2019 data", "The data was collected by an external vendor", "Old data can't be stored in modern databases", "The data is stale; behavior has changed since"], answer: 3, explain: "Data ages. A model trained on old behavior can go stale, so freshness is part of collection decisions." },
     ],
   },
 
@@ -112,9 +112,9 @@ ATLAS.addNodes([
       source: { title: "Google — Handling missing/outlier data", url: "https://developers.google.com/machine-learning/data-prep/construct/collect/data-cleaning", note: "Concrete cleaning techniques and pitfalls." },
     },
     quiz: [
-      { q: "Imputation refers to…", options: ["Deleting the entire dataset", "Filling in missing values with sensible estimates", "Adding more GPUs", "Encrypting the data"], answer: 1, explain: "Imputation replaces missing entries with estimated values (mean, median, model-based, etc.)." },
-      { q: "Why do many models need numeric features to be scaled?", options: ["To save disk space", "So one large-valued feature doesn't dominate the others", "To make the data categorical", "It is never necessary"], answer: 1, explain: "Without scaling, features with big numeric ranges can dominate distance/gradient computations." },
-      { q: "The mean used to standardize a feature should be computed from…", options: ["The entire dataset including test data", "The training set only", "Random noise", "The labels"], answer: 1, explain: "Using all data (including test) to compute preprocessing stats leaks information into training." },
+      { q: "A customer table has 'NY', 'New York', and 'new york' in the city column. What's the right move?", options: ["Drop every row that mentions New York", "Standardize them into one consistent value", "Leave them; the model will figure it out", "Convert each one to a random number"], answer: 1, explain: "Inconsistent formats split one entity into several. Standardize them so the model sees the same thing consistently." },
+      { q: "You standardize a feature using the mean and standard deviation of the whole dataset, before splitting. What's the problem?", options: ["Standardizing makes the feature impossible to read", "The mean of a dataset can't be computed in code", "Test-set information leaks into the training step", "Standardization only works on categorical data"], answer: 2, explain: "Compute cleaning statistics on the training set only and apply them everywhere. Otherwise information from the test data leaks into training." },
+      { q: "A salary column has a few values of 9,999,999. What's the right approach?", options: ["Always delete every outlier automatically", "Always keep them, since all data is valid", "Replace the whole column with its average", "Check whether they're errors or real first"], answer: 3, explain: "Outliers may be placeholder codes or rare truths. Handle them deliberately, not by reflex." },
     ],
   },
 
@@ -151,9 +151,9 @@ ATLAS.addNodes([
       source: { title: "John Tukey — Exploratory Data Analysis (concept)", url: "https://en.wikipedia.org/wiki/Exploratory_data_analysis", note: "The origin and philosophy of EDA." },
     },
     quiz: [
-      { q: "The main goal of EDA is to…", options: ["Train the final model", "Understand the data's distributions, relationships, and problems before modeling", "Deploy to production", "Delete outliers automatically"], answer: 1, explain: "EDA builds understanding and surfaces issues before any modeling commitment is made." },
-      { q: "A feature that predicts the target almost perfectly during EDA is often a sign of…", options: ["A great model", "Data leakage", "Too little data", "A hardware fault"], answer: 1, explain: "Suspiciously perfect prediction usually means information about the target has leaked into that feature." },
-      { q: "Discovering that the positive class is only 2% of rows reveals…", options: ["A class-imbalance problem to plan for", "That the data is perfect", "That you need a bigger GPU", "Nothing useful"], answer: 0, explain: "Severe class imbalance changes which metrics and techniques you should use — better to know early." },
+      { q: "A histogram shows many 'age' values of 999. What does that suggest?", options: ["The dataset includes many very old customers", "It's probably a missing-data code, not a real age", "The model should treat 999 as the typical age", "Histograms can't be used on age values"], answer: 1, explain: "A quick histogram exposes impossible values like placeholder codes before they quietly corrupt a model." },
+      { q: "In your first look at the data, one feature predicts the target almost perfectly. What should you suspect?", options: ["You've found the perfect feature; ship it", "The model will need more regularization", "The target variable was sorted alphabetically", "Data leakage — it may encode the answer itself"], answer: 3, explain: "A suspiciously predictive feature is a classic leakage red flag. Check whether it would really be available at prediction time." },
+      { q: "EDA shows that only 2% of rows are fraud cases. What have you learned?", options: ["The model will easily reach 98% useful accuracy", "Fraud rows should be deleted as outliers", "The classes are imbalanced, which affects metrics", "The dataset is too small to use for anything"], answer: 2, explain: "Class imbalance changes how you train and evaluate, and accuracy alone will mislead. Catching it early saves confused debugging." },
     ],
   },
 
@@ -189,9 +189,9 @@ ATLAS.addNodes([
       source: { title: "Google — Feature Engineering", url: "https://developers.google.com/machine-learning/crash-course/representation/feature-engineering", note: "Turning raw data into good model inputs." },
     },
     quiz: [
-      { q: "In machine learning, a 'feature' is…", options: ["A bug in the model", "An individual measurable input variable (a column)", "The final prediction", "A type of GPU"], answer: 1, explain: "Features are the input variables a model uses to make predictions." },
-      { q: "The key difference deep learning introduced for features is that neural networks…", options: ["Require more manual feature engineering", "Learn their own feature representations from raw data", "Cannot use features at all", "Only work on tabular data"], answer: 1, explain: "Deep nets learn representations automatically, reducing manual feature engineering — especially for images/audio/text." },
-      { q: "For which data type does hand-crafted feature engineering still frequently beat deep learning?", options: ["Raw images", "Tabular/business data", "Raw audio", "Raw text"], answer: 1, explain: "On structured tabular data, gradient-boosted trees with good features often outperform deep nets." },
+      { q: "A ride-share demand model uses raw timestamps and misses rush-hour patterns. What feature would help most?", options: ["The timestamp converted into a very long string", "Hour of day and weekday taken from the timestamp", "A random ID assigned to every ride in the data", "The total number of rows in the dataset"], answer: 1, explain: "Extracting the hour and day exposes cyclical patterns the model can't easily see in a raw timestamp." },
+      { q: "You have listing price and floor area. Which engineered feature best captures value for money?", options: ["Price plus area, added together", "The first digit of the price", "Area rounded to the nearest 1,000", "Price per square foot (price ÷ area)"], answer: 3, explain: "Interaction features like ratios combine raw fields into the signal that actually matters." },
+      { q: "Why do image models rely less on hand-crafted features than tabular models do?", options: ["Images contain no useful features to engineer", "Feature engineering is banned for image data", "Deep nets learn features from raw pixels", "Image models never need training data"], answer: 2, explain: "Representation learning discovers features automatically for images, audio and text. On tabular data, thoughtful hand-made features still often win." },
     ],
   },
 
@@ -226,9 +226,9 @@ ATLAS.addNodes([
       source: { title: "Google — Training, validation, and test sets", url: "https://developers.google.com/machine-learning/crash-course/overfitting/dividing-datasets", note: "Why and how to partition data." },
     },
     quiz: [
-      { q: "The test set should be used…", options: ["Continuously during training", "Once, at the very end, for an honest performance estimate", "To train the model", "To pick the learning rate"], answer: 1, explain: "The test set must stay untouched until the end; using it for decisions contaminates the estimate." },
-      { q: "A large gap between high training accuracy and low validation accuracy indicates…", options: ["Underfitting", "Overfitting", "A perfect model", "A hardware error"], answer: 1, explain: "The model fits training data far better than unseen data — the signature of overfitting." },
-      { q: "For time-series data, you should split…", options: ["Randomly by shuffling all rows", "By time, keeping the future out of training", "By alphabet", "Not at all"], answer: 1, explain: "Random shuffling leaks future information into the past; time-series must split chronologically." },
+      { q: "You tried 30 model variants and kept whichever scored best on the test set. What's the problem?", options: ["Thirty variants is too few to find a good one", "The test set is no longer an honest estimate", "The training set was probably too large", "Test sets should be used before training"], answer: 1, explain: "Once you make decisions based on the test set, it's contaminated. Tune on validation data and touch the test set once, at the end." },
+      { q: "A hospital dataset has several rows per patient. How should you split it?", options: ["Randomly by row, so the split is perfectly even", "Alphabetically by the patient's last name", "Put the newest rows in training, oldest in test", "By patient, so no patient is in both train and test"], answer: 3, explain: "Grouped data should be split by group. Otherwise the model sees the same patient in training and testing, which inflates results." },
+      { q: "What is the validation set used for?", options: ["Training the model's weights directly", "Reporting the final, unbiased performance", "Tuning hyperparameters and choosing models", "Storing data that couldn't be cleaned"], answer: 2, explain: "Train to fit parameters, validate to tune and select, and test once for the honest final estimate." },
     ],
   },
 
@@ -265,9 +265,9 @@ ATLAS.addNodes([
       source: { title: "Google — Classification metrics (precision, recall, ROC/AUC)", url: "https://developers.google.com/machine-learning/crash-course/classification/accuracy-precision-recall", note: "Clear definitions with worked examples." },
     },
     quiz: [
-      { q: "Why is accuracy a poor metric when 99% of examples are one class?", options: ["It is too hard to compute", "A model that always predicts the majority class scores 99% while being useless", "Accuracy needs a GPU", "It only works for text"], answer: 1, explain: "With heavy imbalance, always guessing the majority yields high accuracy but catches none of the rare, important cases." },
-      { q: "Recall measures…", options: ["Of the items flagged positive, how many were correct", "Of all real positives, how many the model caught", "The training speed", "The number of features"], answer: 1, explain: "Recall = true positives / all actual positives — the fraction of real positives you found." },
-      { q: "Compared to MAE, RMSE…", options: ["Ignores large errors", "Penalizes large errors more heavily", "Is only for classification", "Requires labels to be text"], answer: 1, explain: "Squaring errors makes RMSE grow faster with big mistakes, emphasizing large errors." },
+      { q: "A cancer-screening model must miss as few real cases as possible, even if some healthy people get flagged. Which metric matters most?", options: ["Precision", "Recall", "Accuracy", "RMSE"], answer: 1, explain: "Recall measures how many real positives you catch. When misses are costliest, prioritize recall and accept more false alarms." },
+      { q: "A spam filter sends important emails to the spam folder, and users hate it. Which metric should you improve?", options: ["Recall: catching more of the real spam emails", "Accuracy: the share of all emails classified right", "RMSE: the average size of each prediction error", "Precision: fewer false alarms among flagged emails"], answer: 3, explain: "Precision asks how many flagged items were really positive. Legitimate mail in the spam folder means false positives, so raise precision." },
+      { q: "Only 1% of transactions are fraud, and your model is 99% accurate. What should you conclude?", options: ["The model is excellent and ready to ship", "Nothing yet; always saying 'legit' gets 99% too", "The model must be overfitting the fraud cases", "Accuracy above 95% guarantees it catches fraud"], answer: 1, explain: "On imbalanced data, accuracy misleads. Look at precision, recall, F1 or AUC to see whether fraud is actually being caught." },
     ],
   },
 
@@ -303,9 +303,9 @@ ATLAS.addNodes([
       source: { title: "Kohavi, Tang & Xu — Trustworthy Online Controlled Experiments", url: "https://experimentguide.com/", note: "The definitive practitioner reference on A/B testing." },
     },
     quiz: [
-      { q: "Why does random assignment let an A/B test show causation?", options: ["It makes the groups comparable, so differences can be attributed to the change", "It increases the sample size automatically", "It removes the need for a control group", "It guarantees a positive result"], answer: 0, explain: "Randomization balances all other factors on average, so the treatment is the only systematic difference." },
-      { q: "'Peeking' — repeatedly checking results and stopping when they look good — causes…", options: ["More reliable results", "Inflated false-positive rates", "Faster GPUs", "Lower variance"], answer: 1, explain: "Repeated looks with early stopping dramatically raise the chance of a spurious 'significant' result." },
-      { q: "An underpowered A/B test (too small a sample) tends to…", options: ["Always find effects", "Miss real effects that exist", "Need no randomization", "Prove causation more strongly"], answer: 1, explain: "Insufficient sample size lacks the power to detect true effects, producing false negatives." },
+      { q: "Why are users randomly assigned to control and treatment groups in an A/B test?", options: ["So each group ends up with exactly the same size", "So the test finishes faster than it otherwise would", "So differences can be credited to the change itself", "So users can choose which version they prefer"], answer: 2, explain: "Random assignment makes the groups comparable, so a difference in outcomes can be attributed to the change: causal evidence, not just correlation." },
+      { q: "A PM checks an A/B test every hour and stops it the moment it shows a significant win. What's wrong?", options: ["Hourly checks slow down the website for users", "Peeking inflates the chance of a false positive", "Tests should always run for exactly one week", "Nothing — stopping early saves time and money"], answer: 1, explain: "Checking repeatedly and stopping when it looks good makes chance fluctuations look like wins. Fix the sample size up front, or use methods designed for repeated looks." },
+      { q: "A redesigned page lifts clicks by 20% in its first week, then fades back to baseline. What's the likely explanation?", options: ["The test had too much statistical power", "The control group grew bored of the old page", "Randomization failed during the second week", "A novelty effect: it drew clicks by being new"], answer: 3, explain: "New things attract attention for a while. Run tests long enough to see past novelty effects." },
     ],
   },
 
@@ -342,9 +342,9 @@ ATLAS.addNodes([
       source: { title: "Edward Tufte — The Visual Display of Quantitative Information", url: "https://www.edwardtufte.com/tufte/books_vdqi", note: "The foundational text on principled data visualization." },
     },
     quiz: [
-      { q: "To show how one numeric variable is distributed, the natural choice is…", options: ["A pie chart", "A histogram", "A network graph", "A word cloud"], answer: 1, explain: "Histograms (or box plots) reveal the shape, spread, and skew of a single variable's distribution." },
-      { q: "Truncating a bar chart's y-axis so it doesn't start at zero can…", options: ["Improve honesty", "Exaggerate small differences and mislead the reader", "Reduce the data", "Only affect line charts"], answer: 1, explain: "A non-zero baseline visually inflates differences, a classic way charts mislead." },
-      { q: "Tufte's 'data-ink ratio' principle advises you to…", options: ["Add more decoration and 3D effects", "Maximize the ink devoted to actual data and cut chart junk", "Always use pie charts", "Hide the axes"], answer: 1, explain: "Spend ink on data, not decoration — clarity comes from removing non-informative elements." },
+      { q: "You want to show how monthly revenue changed over two years. Which chart fits?", options: ["A pie chart", "A histogram", "A line chart", "A scatter plot"], answer: 2, explain: "Change over time is a line chart's job. Pie charts show parts of a whole; histograms show one variable's distribution." },
+      { q: "A bar chart's y-axis starts at 95 instead of 0, making a 2% difference look huge. What's the issue?", options: ["Bar charts can't show percentages at all", "A truncated axis exaggerates the difference", "The bars should have been drawn in 3D", "The chart uses too little color to be clear"], answer: 1, explain: "Truncated axes exaggerate differences. Honest charts show the data plainly and cut distortion and decoration." },
+      { q: "What's the difference between exploration charts and explanation charts?", options: ["Exploration charts must always be in 3D", "Explanation charts never use real data", "There's no difference; both have the same goal", "Exploration is for you; explanation communicates"], answer: 3, explain: "Exploration charts help you understand the data during analysis; explanation charts are polished to communicate a conclusion to others." },
     ],
   },
 
@@ -378,9 +378,9 @@ ATLAS.addNodes([
       source: { title: "Fundamentals of Data Engineering (Reis & Housley) — overview", url: "https://www.oreilly.com/library/view/fundamentals-of-data/9781098108298/", note: "The standard reference for the data-engineering lifecycle." },
     },
     quiz: [
-      { q: "What does ETL stand for?", options: ["Evaluate, Test, Learn", "Extract, Transform, Load", "Encode, Train, Log", "Explore, Tune, Launch"], answer: 1, explain: "ETL pipelines extract data from sources, transform it, and load it to a destination." },
-      { q: "Real-time fraud detection most needs which kind of pipeline?", options: ["Nightly batch", "Streaming (continuous, event-by-event)", "Manual copy-paste", "No pipeline"], answer: 1, explain: "Fraud must be caught as it happens, requiring streaming rather than scheduled batch processing." },
-      { q: "An 'idempotent' pipeline step means…", options: ["It can only run once ever", "Re-running it produces the same result without duplication or corruption", "It requires a GPU", "It deletes its inputs"], answer: 1, explain: "Idempotency lets you safely retry steps — reruns don't double-count or corrupt data." },
+      { q: "A nightly job failed halfway, and re-running it doubled some records. Which property was missing?", options: ["Streaming: processing each event as it arrives", "Encoding: converting categories into numbers", "Idempotency: re-runs should give the same result", "Sampling: using only part of the data each night"], answer: 2, explain: "An idempotent pipeline produces the same result however many times it runs, so failures can be retried safely." },
+      { q: "A fraud system must score each card swipe within a second. Which pipeline style fits?", options: ["Batch, processing everything once a night", "Streaming, processing events as they arrive", "Manual, with an analyst exporting a CSV", "Monthly, rebuilding all tables at once"], answer: 1, explain: "Real-time decisions need streaming. Batch processing is simpler and great for training data and reports, but it's too slow here." },
+      { q: "A source system starts sending prices in cents instead of dollars. What catches this before the model is fed bad data?", options: ["A faster orchestration tool like Airflow", "Switching from ETL to ELT ordering", "Adding more rows to the training data", "Data-quality checks on the incoming values"], answer: 3, explain: "Good pipelines are tested and observable. Quality checks on inputs catch unit changes and broken data before models quietly degrade." },
     ],
   },
 
@@ -415,9 +415,9 @@ ATLAS.addNodes([
       source: { title: "Snorkel — Weak supervision and programmatic labeling", url: "https://www.snorkel.org/blog/", note: "How teams scale labeling beyond pure manual annotation." },
     },
     quiz: [
-      { q: "In supervised learning, labels provide…", options: ["The GPU configuration", "The ground-truth answers the model learns to predict", "The learning rate", "The chart colors"], answer: 1, explain: "Labels are the correct outputs; the model learns the mapping from inputs to these answers." },
-      { q: "Low inter-annotator agreement usually indicates…", options: ["A perfect dataset", "Ambiguous tasks or poor labeling guidelines", "Too many GPUs", "The model is overfitting"], answer: 1, explain: "When labelers disagree, the task definition or guidelines are unclear — labels will be noisy." },
-      { q: "Active learning improves labeling efficiency by…", options: ["Labeling every example twice", "Prioritizing the examples the model is most uncertain about", "Removing all humans", "Only labeling easy cases"], answer: 1, explain: "By focusing human effort on the most informative (uncertain) examples, active learning gets more value per label." },
+      { q: "Two labelers agree on only 60% of 'toxic comment' labels. What does that suggest?", options: ["One labeler must be deliberately cheating", "The model will learn faster from disagreement", "The task or guidelines are ambiguous", "Labels don't matter once there's enough data"], answer: 2, explain: "Low inter-annotator agreement signals an ambiguous task or unclear guidelines. Clarify them and adjudicate the disagreements." },
+      { q: "Your labeling budget is small. How can the model help choose which examples to label?", options: ["Label only the examples it already gets right", "Active learning: label where it's least sure", "Label examples in alphabetical order by ID", "Skip labeling and train on unlabeled data"], answer: 1, explain: "Active learning sends the most informative, uncertain examples to humans first, getting more value from each label." },
+      { q: "Why does label quality set a ceiling on model quality?", options: ["Labels are used only for display, not training", "Noisy labels make training run more slowly", "Models ignore labels once they are large enough", "Models learn what labels say, noise and all"], answer: 3, explain: "Labels are the ground truth for training and evaluation. Noisy labels teach noise and make evaluation unreliable." },
     ],
   },
 
@@ -452,9 +452,9 @@ ATLAS.addNodes([
       source: { title: "Kaufman et al. — Leakage in Data Mining", url: "https://dl.acm.org/doi/10.1145/2020408.2020496", note: "The formal treatment of leakage and how to avoid it." },
     },
     quiz: [
-      { q: "Data leakage typically causes evaluation results that are…", options: ["Too pessimistic", "Overly optimistic, then failing in production", "Exactly correct", "Impossible to compute"], answer: 1, explain: "Leakage lets the model 'cheat', inflating lab performance that then collapses on real unseen data." },
-      { q: "Using a feature that only becomes known *after* the outcome is an example of…", options: ["Good feature engineering", "Target leakage", "Regularization", "Cross-validation"], answer: 1, explain: "Such a feature encodes the answer and won't exist at real prediction time — classic target leakage." },
-      { q: "The best mental check for leakage is asking…", options: ["Is my GPU fast enough?", "Would I actually have this feature's value at the moment of prediction?", "Is the model big enough?", "Are the labels colorful?"], answer: 1, explain: "If a value wouldn't be available at prediction time, using it in training leaks information." },
+      { q: "A fraud model uses a `was_refunded` feature and scores 99% offline, then fails in production. Why?", options: ["The model was too small to learn refund patterns", "Production data uses different column names", "Refunds happen after fraud is confirmed, so it leaks", "99% offline always means 99% in production"], answer: 2, explain: "That's target leakage: the feature is only known after the answer. Ask of every feature whether you'd really have it at prediction time." },
+      { q: "You shuffle a time series before splitting it into train and test. What's the risk?", options: ["Shuffling makes the data harder to store on disk", "The model trains on the future to predict the past", "The test set becomes much larger than intended", "Time series can't be used for machine learning"], answer: 1, explain: "That's temporal leakage: shuffling lets future information into training, so offline results look far better than real forecasting would." },
+      { q: "Your first model scores unbelievably well. What's the best first reaction?", options: ["Ship it before anything changes", "Add more features to push it higher", "Report it as a new state of the art", "Look for leakage before celebrating"], answer: 3, explain: "If results seem too good to be true, look for leakage first. It's the classic reason lab scores collapse in production." },
     ],
   },
 ]);
