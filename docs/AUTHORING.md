@@ -21,7 +21,8 @@ data/20-data-science.js│
 data/80-cross-cutting.js┘
 data/99-edges.js       ALL edges (links between nodes), across every domain
 index.html             loads the above via <script> with ?v= cache-busting
-js/app.js              the engine (graph, search, panel, quiz) — rarely needs editing
+js/app.js              the engine (graph, panel, quiz, paths) — rarely needs editing
+js/search.js           full-text search index over node content (no DOM)
 tools/validate.js      the data validator
 ```
 
@@ -40,7 +41,7 @@ A node is a plain object appended via `ATLAS.addNodes([ ... ])`. Full shape:
   label: "Human Readable Name",       // shown on the node and panel title
   cluster: "dl",                      // one of the cluster ids in 00-clusters.js
   short: "One sentence shown on hover and under the title.",
-  keywords: "space separated terms for search",  // helps search find this node
+  keywords: "space separated terms for search",  // synonyms/acronyms not in the text (search already covers the lesson body)
 
   learn: {
     why: "Why this matters — grounds the concept in real AI-engineering practice.",
@@ -154,7 +155,7 @@ Warnings (e.g. a node with < 3 quiz questions) are non-fatal; errors block.
 
 Then reload the page and spot-check the new node's panel (Learn renders, Quiz scores,
 connection chips navigate). Remember to **bump `?v=`** in `index.html` for any
-`data/*.js`, `js/app.js`, or `css/styles.css` you changed, or the browser serves a
+`data/*.js`, `js/*.js`, or `css/styles.css` you changed, or the browser serves a
 cached copy.
 
 ---
