@@ -468,6 +468,9 @@ html, body {
   padding: 5px 11px; border-radius: 7px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: var(--font-body);
 }
 .path-crumb button:hover { border-color: var(--accent); }
+.path-crumb.off-path { padding: 8px 10px; border: 1px dashed var(--line-strong); border-radius: 8px; }
+.path-view-toggle { display: flex; align-items: center; gap: 8px; margin: 4px 0 14px; font-size: 13px; color: var(--ink); cursor: pointer; }
+.path-view-toggle input { accent-color: var(--accent); width: 15px; height: 15px; margin: 0; }
 
 /* ---------------- Guided tour ---------------- */
 #btn-help {

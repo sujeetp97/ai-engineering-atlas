@@ -174,8 +174,21 @@
         },
       },
     ],
-    layout: layoutOpts(),
+    layout: { name: "null" },   // the real layout runs below, via runMainLayout()
   });
+
+  function runMainLayout() { cy.layout(layoutOpts()).run(); }
+  runMainLayout();
+
+  // Run fn once no node is mid-animation (e.g. the load-time layout), so
+  // positions read in fn are final. Gives up waiting after ~3s.
+  function whenSettled(fn) {
+    var tries = 0;
+    (function check() {
+      if (tries++ > 30 || !cy.nodes().some(function (n) { return n.animated(); })) fn();
+      else setTimeout(check, 100);
+    })();
+  }
 
   function layoutOpts() {
     return {
@@ -255,16 +268,15 @@
     });
   })();
 
+  // A node is shown unless its domain is filtered off or, in path view,
+  // it isn't on the active path. Edges show only when both ends do.
   function applyClusterFilter() {
+    var onPath = null;
+    if (pathViewOn()) { onPath = {}; pathState.sequence.forEach(function (id) { onPath[id] = 1; }); }
+    function shown(n) { return !clusterOff[n.data("cluster")] && (!onPath || onPath[n.id()]); }
     cy.batch(function () {
-      cy.nodes().forEach(function (n) {
-        var hidden = clusterOff[n.data("cluster")];
-        n.style("display", hidden ? "none" : "element");
-      });
-      cy.edges().forEach(function (e) {
-        var hidden = clusterOff[e.source().data("cluster")] || clusterOff[e.target().data("cluster")];
-        e.style("display", hidden ? "none" : "element");
-      });
+      cy.nodes().forEach(function (n) { n.style("display", shown(n) ? "element" : "none"); });
+      cy.edges().forEach(function (e) { e.style("display", shown(e.source()) && shown(e.target()) ? "element" : "none"); });
     });
   }
 
@@ -295,7 +307,7 @@
     cy.elements().addClass("faded");
     neighborhood.removeClass("faded").addClass("hl");
     node.removeClass("hl").addClass("selected");
-    if (opts.center !== false) {
+    if (opts.center !== false && node.visible()) {
       cy.animate({ center: { eles: node }, zoom: Math.max(cy.zoom(), 0.9) }, { duration: 350 });
     }
   }
@@ -509,6 +521,12 @@
         '<span class="pc-step">Step ' + (pIdx + 1) + ' of ' + pathState.sequence.length + "</span>" +
         (pNextId ? '<button data-action="path-next-node">Next: ' + escapeHtml(nodeById[pNextId].label) + " →</button>" : "") +
         "</div>";
+    } else if (pathViewOn()) {
+      html += '<div class="path-crumb off-path">' +
+        '<button data-action="back-to-path">← Path</button>' +
+        '<span class="pc-step">Not on your path — hidden from the graph</span>' +
+        '<button data-action="show-full-atlas">Show full atlas</button>' +
+        "</div>";
     }
     html += '<span class="p-cluster-tag" style="background:' + hexA(c.color, 0.12) + ";color:" + c.color + '">' +
               '<span class="dot" style="background:' + c.color + '"></span>' + c.label + "</span>";
@@ -547,6 +565,8 @@
     // path breadcrumb buttons
     var backBtn = panelScroll.querySelector("[data-action=back-to-path]");
     if (backBtn) backBtn.addEventListener("click", openPathPanel);
+    var fullBtn = panelScroll.querySelector("[data-action=show-full-atlas]");
+    if (fullBtn) fullBtn.addEventListener("click", function () { setPathView(false); openPanel(n.id); focusNode(n.id); });
     var nextNodeBtn = panelScroll.querySelector("[data-action=path-next-node]");
     if (nextNodeBtn) nextNodeBtn.addEventListener("click", function () {
       var idx = pathState.sequence.indexOf(n.id);
@@ -757,7 +777,8 @@
   //  TOP BAR ACTIONS
   // ==========================================================
   document.getElementById("btn-fit").addEventListener("click", function () {
-    cy.animate({ fit: { padding: 60 } }, { duration: 400 });
+    if (pathViewOn()) fitVisible(MAX_PATH_ZOOM);
+    else cy.animate({ fit: { padding: 60 } }, { duration: 400 });
   });
   document.getElementById("btn-reset").addEventListener("click", function () {
     clusterOff = {};
@@ -765,7 +786,8 @@
     applyClusterFilter();
     clearHighlight();
     searchEl.value = ""; clearBtn.style.display = "none"; resultsEl.classList.remove("open");
-    cy.layout(layoutOpts()).run();
+    if (pathViewOn()) { layoutPathView(); highlightPath(); }
+    else { if (pathState.active) highlightPath(); runMainLayout(); }
   });
 
   // fit once layout settles — robust against races, with a fallback
@@ -773,7 +795,7 @@
   function initialFit() {
     if (didInitialFit) return;
     didInitialFit = true;
-    cy.animate({ fit: { padding: 50 } }, { duration: 500 });
+    if (!pathViewOn()) cy.animate({ fit: { padding: 50 } }, { duration: 500 });
   }
   cy.one("layoutstop", initialFit);
   setTimeout(initialFit, 1600); // fallback if layoutstop was missed
@@ -790,7 +812,10 @@
   //  A path is a topological ordering of the prerequisites of a goal,
   //  skipping what's already mastered. Uses the prereq/enables/partof DAG.
   // ==========================================================
-  var pathState = { active: false, goal: null, sequence: [] };
+  // showAll: the user asked to see the whole atlas while a path is active.
+  var pathState = { active: false, goal: null, sequence: [], showAll: false };
+
+  function pathViewOn() { return pathState.active && !pathState.showAll; }
 
   var clusterRank = {};
   Object.keys(CL).forEach(function (c, i) { clusterRank[c] = i; });
@@ -845,6 +870,135 @@
     return seq;
   }
 
+  // ---------- path-only graph view ----------
+  // Entering path view hides everything off the path and lays the path out as
+  // left-to-right layers (a node sits one column right of its deepest
+  // prerequisite on the path). The full-atlas positions are saved on entry and
+  // restored on exit, so leaving is instant and the atlas looks as it did.
+  var fullPositions = null;
+  var PV = { col: 200, row: 80, maxRows: 8, sub: 160, bandGap: 140 };
+  var MAX_PATH_ZOOM = 1.1;   // don't blow a 3-node path up to fill the screen
+
+  // Positions for the path-only view. Nodes are layered by prerequisite depth
+  // (a node sits one layer after its deepest prerequisite on the path). Layers
+  // run left to right; when that gets too wide for the screen they wrap into
+  // bands that read like lines of text, so a long chain still fits legibly.
+  function pathLayoutPositions(seq, view) {
+    var onPath = {}, idx = {};
+    seq.forEach(function (id, i) { onPath[id] = 1; idx[id] = i; });
+    // seq is topologically ordered, so each node's prereqs are already placed
+    var depth = {};
+    seq.forEach(function (id) {
+      var d = 0;
+      revOrder[id].forEach(function (p) { if (onPath[p] && depth[p] != null) d = Math.max(d, depth[p] + 1); });
+      depth[id] = d;
+    });
+    var layers = [];
+    seq.forEach(function (id) { (layers[depth[id]] = layers[depth[id]] || []).push(id); });
+
+    // 1) lay each layer out locally: order by where its prereqs sit (fewer
+    //    crossings), then by step; wrap tall layers into sub-columns
+    var local = {}, blocks = [];
+    layers.forEach(function (layer) {
+      var bary = {};
+      layer.forEach(function (id) {
+        var ys = revOrder[id].filter(function (p) { return local[p]; }).map(function (p) { return local[p].y; });
+        bary[id] = ys.length ? ys.reduce(function (a, b) { return a + b; }, 0) / ys.length : 0;
+      });
+      layer.sort(function (a, b) { return (bary[a] - bary[b]) || (idx[a] - idx[b]); });
+      var chunks = Math.ceil(layer.length / PV.maxRows);
+      var per = Math.ceil(layer.length / chunks);
+      for (var c = 0; c < chunks; c++) {
+        var part = layer.slice(c * per, (c + 1) * per);
+        part.forEach(function (id, r) { local[id] = { x: c * PV.sub, y: (r - (part.length - 1) / 2) * PV.row }; });
+      }
+      blocks.push({ ids: layer, width: (chunks - 1) * PV.sub, height: (per - 1) * PV.row });
+    });
+
+    // 2) pack layers into bands; pick the band count that lets the whole path
+    //    be shown at the largest (capped) zoom; extra bands must earn >15%
+    function pack(nBands) {
+      var perBand = Math.ceil(blocks.length / nBands), bands = [];
+      for (var i = 0; i < blocks.length; i += perBand) bands.push(blocks.slice(i, i + perBand));
+      var w = 0, h = 0;
+      bands.forEach(function (b) {
+        b.w = b.reduce(function (a, bl) { return a + bl.width; }, 0) + (b.length - 1) * PV.col;
+        b.h = Math.max.apply(null, b.map(function (bl) { return bl.height; }));
+        w = Math.max(w, b.w); h += b.h;
+      });
+      h += (bands.length - 1) * PV.bandGap;
+      return { bands: bands, zoom: Math.min(view.w / (w + PV.col), view.h / (h + 2 * PV.row), MAX_PATH_ZOOM) };
+    }
+    var best = pack(1);
+    for (var n = 2; n <= blocks.length; n++) { var t = pack(n); if (t.zoom > best.zoom * 1.15) best = t; }
+
+    var pos = {}, y = 0;
+    best.bands.forEach(function (band) {
+      var x = 0, mid = y + band.h / 2;
+      band.forEach(function (bl) {
+        bl.ids.forEach(function (id) { pos[id] = { x: x + local[id].x, y: mid + local[id].y }; });
+        x += bl.width + PV.col;
+      });
+      y += band.h + PV.bandGap;
+    });
+    return pos;
+  }
+
+  function layoutPathView() {
+    var box = document.getElementById("cy");
+    var pos = pathLayoutPositions(pathState.sequence, { w: box.clientWidth || 800, h: box.clientHeight || 600 });
+    cy.nodes().stop(true);   // drop any in-flight animation so the new one wins
+    cy.nodes(":visible").layout({
+      name: "preset", positions: function (n) { return pos[n.id()]; },
+      fit: false, animate: true, animationDuration: 550,
+      stop: function () { fitVisible(MAX_PATH_ZOOM); },
+    }).run();
+  }
+
+  // Frame the visible elements, keeping clear of the legend and not zooming
+  // in past maxZoom.
+  function fitVisible(maxZoom) {
+    var eles = cy.elements(":visible");
+    if (eles.empty()) return;
+    var bb = eles.boundingBox(), box = document.getElementById("cy");
+    var W = box.clientWidth, H = box.clientHeight, pad = 50;
+    var left = legendEl.offsetWidth ? legendEl.offsetLeft + legendEl.offsetWidth + 10 : pad;
+    var z = Math.min((W - left - pad) / bb.w, (H - 2 * pad) / bb.h, maxZoom || 2);
+    var cx = left + (W - left - pad) / 2, cyy = H / 2;
+    cy.animate({ zoom: z, pan: { x: cx - z * (bb.x1 + bb.w / 2), y: cyy - z * (bb.y1 + bb.h / 2) } }, { duration: 400 });
+  }
+
+  function enterPathView() {
+    if (fullPositions) { applyClusterFilter(); layoutPathView(); return; }  // switching paths
+    whenSettled(function () {
+      if (!pathViewOn() || fullPositions) return;   // exited/re-entered while waiting
+      fullPositions = {};
+      cy.nodes().forEach(function (n) { var p = n.position(); fullPositions[n.id()] = { x: p.x, y: p.y }; });
+      applyClusterFilter();
+      layoutPathView();
+    });
+  }
+
+  function leavePathView() {
+    applyClusterFilter();
+    if (!fullPositions) return;
+    var saved = fullPositions;
+    fullPositions = null;
+    cy.nodes().stop(true);   // drop any in-flight path-layout animation
+    cy.nodes().layout({
+      name: "preset", positions: function (n) { return saved[n.id()]; },
+      fit: true, padding: 50, animate: true, animationDuration: 550,
+    }).run();
+  }
+
+  // true = only the path, false = full atlas (path still highlighted)
+  function setPathView(only) {
+    pathState.showAll = !only;
+    if (pathViewOn()) enterPathView(); else leavePathView();
+    highlightPath();
+    if (!panel.hidden && !currentNodeId) renderPathItinerary();
+  }
+
   function highlightPath() {
     clearHighlight();
     if (!pathState.active) return;
@@ -879,15 +1033,18 @@
     pathState.active = true;
     pathState.goal = goal;
     pathState.sequence = computeSequence(goal);
+    pathState.showAll = false;
     progress.path = goal; saveProgress();
+    enterPathView();
     highlightPath();
     renderPathItinerary();
     setPathBtn();
   }
 
   function exitPath() {
-    pathState.active = false; pathState.goal = null; pathState.sequence = [];
+    pathState.active = false; pathState.goal = null; pathState.sequence = []; pathState.showAll = false;
     delete progress.path; saveProgress();
+    leavePathView();
     clearHighlight();
     closePanel();
     setPathBtn();
@@ -1000,6 +1157,8 @@
     });
     html += "</ol>";
 
+    html += '<label class="path-view-toggle"><input type="checkbox" data-action="path-only"' + (pathViewOn() ? " checked" : "") + " />" +
+            "<span>Show only this path on the graph</span></label>";
     html += '<div class="learn-actions"><button class="btn-secondary" data-action="path-change">Change goal</button>' +
             '<button class="btn-secondary" data-action="path-exit">Exit path</button></div>';
 
@@ -1014,6 +1173,7 @@
     if (nb) nb.addEventListener("click", function () { var nx = firstUnmastered(pathState.sequence); if (nx) { focusNode(nx, { center: true }); openPanel(nx); } });
     panelScroll.querySelector("[data-action=path-change]").addEventListener("click", renderPathSetup);
     panelScroll.querySelector("[data-action=path-exit]").addEventListener("click", exitPath);
+    panelScroll.querySelector("[data-action=path-only]").addEventListener("change", function () { setPathView(this.checked); });
   }
 
   function setPathBtn() {

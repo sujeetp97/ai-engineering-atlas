@@ -39,10 +39,12 @@ python3 -m http.server 8000
   **Import** that file on another device/browser to merge it in. The same menu has a
   **Reset**.
 - **Learning Path** — click **◆ Learning Path**, pick a destination (search for a concept
-  or domain, pick a whole domain, or take the complete curriculum), and the atlas orders the prerequisites for
-  you — skipping anything you've already mastered — into a numbered, checkable itinerary.
-  The route is highlighted in the graph; each quiz you pass advances the path to the next
-  concept. (This is why the prerequisite links must stay acyclic — the validator enforces it.)
+  or domain, pick a whole domain, or take the complete curriculum), and the atlas orders
+  the prerequisites for you into a numbered, checkable itinerary, skipping anything you've
+  already mastered. The graph then shows **only that path**, laid out left to right in
+  learning order (wrapping into rows for long paths). Untick *Show only this path* to see
+  it highlighted in the full atlas. Exiting restores the full graph as it was. Each quiz
+  you pass advances the path to the next concept. (This is why the prerequisite links must stay acyclic — the validator enforces it.)
 
 ## The eight domains
 
