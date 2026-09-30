@@ -34,10 +34,15 @@ python3 -m http.server 8000
 - **Quiz** — take the quiz at the end of a lesson. Score ≥ 75% and the node is marked
   understood (saved in your browser's `localStorage`). Come back a few days later to
   re-quiz — spacing is what moves knowledge into long-term memory.
-- **Move your progress between devices** — progress lives only in the browser you're
-  using. Click the progress line (under the title) to **Export** it to a JSON file, then
-  **Import** that file on another device/browser to merge it in. The same menu has a
-  **Reset**.
+- **Keep your progress safe:** progress is kept in your browser. Click **Save to file**
+  in the top bar and pick where to keep a progress file. From then on every change is
+  saved to it automatically, and the chip shows whether it's saved. On your next visit,
+  one click on **Resume progress** picks up from that file (browsers ask once per visit).
+  If this browser's data is ever cleared, the atlas offers to open your progress file and
+  carries on from there. Automatic file saving works in Chromium browsers (Chrome, Edge,
+  Brave, Arc). In Firefox and Safari the same menu offers **Download a backup** /
+  **Load a backup file** instead. The menu (also under the progress line) has
+  **Import & merge**, to combine progress from another device, and **Reset**.
 - **Learning Path** — click **◆ Learning Path** and start with a **path for your role**:
   *Using AI at work* (no technical background needed), *AI for product managers*,
   *AI engineer*, or *ML & research foundations*. Each is a hand-picked sequence covering
@@ -69,6 +74,7 @@ index.html            App shell + script load order
 css/styles.css        Theme (light "paper" + automatic dark mode)
 js/app.js             Graph engine, learn panel, quiz, paths
 js/search.js          Full-text search over names and lesson content
+js/filesync.js        Autosave progress to a user-chosen file (File System Access API)
 data/_registry.js     Global registry every data file appends to
 data/00-clusters.js   The eight domains
 data/10..80-*.js      Nodes (concepts) per domain

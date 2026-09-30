@@ -24,6 +24,7 @@ data/90-paths.js       curated, role-based learning paths (loaded after edges)
 index.html             loads the above via <script> with ?v= cache-busting
 js/app.js              the engine (graph, panel, quiz, paths) — rarely needs editing
 js/search.js           full-text search index over node content (no DOM)
+js/filesync.js         keeps progress synced to a user-chosen file (no DOM)
 tools/validate.js      the data validator
 ```
 

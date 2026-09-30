@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/styles.css?v=8" />
+  <link rel="stylesheet" href="css/styles.css?v=9" />
 </head>
 <body>
   <!-- ============ Top bar ============ -->
@@ -16,13 +16,9 @@
       <span class="brand-mark" aria-hidden="true">◍</span>
       <div class="brand-text">
         <h1>AI Engineering Atlas</h1>
-        <button id="progress-line" title="Your progress — click to export, import, or reset">Loading knowledge graph…</button>
+        <button id="progress-line" title="Your progress — save it to a file, import, or reset">Loading knowledge graph…</button>
       </div>
-      <div id="progress-menu" hidden>
-        <button data-act="export" type="button">⭳&nbsp;&nbsp;Export my progress</button>
-        <button data-act="import" type="button">⭱&nbsp;&nbsp;Import progress</button>
-        <button data-act="reset" class="danger" type="button">↺&nbsp;&nbsp;Reset progress</button>
-      </div>
+      <div id="progress-menu" role="menu" hidden><!-- filled by app.js --></div>
       <input type="file" id="import-file" accept="application/json,.json" hidden />
     </div>
 
@@ -32,6 +28,9 @@
       <ul id="search-results" role="listbox"></ul>
     </div>
 
+    <button id="btn-sync" class="sync-chip" type="button" data-state="off">
+      <span class="sync-dot" aria-hidden="true"></span><span class="sync-label">Save to file</span>
+    </button>
     <button id="btn-help" title="How to use this app — guided tour">?</button>
     <button id="btn-path" class="path-btn" title="Build a guided learning path to a goal">◆ Learning Path</button>
 
@@ -49,6 +48,9 @@
 
   <!-- ============ Hover tooltip ============ -->
   <div id="tooltip" hidden></div>
+
+  <!-- ============ Toast (save nudges, resume / recovery prompts) ============ -->
+  <div id="toast" role="status" aria-live="polite" hidden></div>
 
   <!-- ============ Node detail / learn / quiz panel ============ -->
   <aside id="panel" class="panel" hidden>
@@ -90,7 +92,8 @@
 
   <!-- ============ App ============ -->
   <script src="js/search.js?v=1"></script>
-  <script src="js/app.js?v=12"></script>
-  <script src="js/tour.js?v=2"></script>
+  <script src="js/filesync.js?v=2"></script>
+  <script src="js/app.js?v=16"></script>
+  <script src="js/tour.js?v=3"></script>
 </body>
 </html>

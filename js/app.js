@@ -30,8 +30,14 @@
     try { return JSON.parse(localStorage.getItem(STORE_KEY)) || { understood: {}, best: {} }; }
     catch (e) { return { understood: {}, best: {} }; }
   }
-  function saveProgress() {
+  // localStorage is the working copy; saveProgress also autosaves to the
+  // connected progress file, if any (see PROGRESS: FILE SYNC below).
+  function saveLocal() {
     try { localStorage.setItem(STORE_KEY, JSON.stringify(progress)); } catch (e) {}
+  }
+  function saveProgress() {
+    saveLocal();
+    scheduleFileWrite();
   }
   function isUnderstood(id) { return !!progress.understood[id]; }
 
@@ -737,6 +743,7 @@
       cy.getElementById(n.id).addClass("understood");
       updateProgressLine();
       if (pathState.active) highlightPath();
+      setTimeout(maybeNudgeSave, 1200);
     }
     saveProgress();
 
@@ -1245,44 +1252,33 @@
   setPathBtn();
 
   // ==========================================================
-  //  PROGRESS EXPORT / IMPORT / RESET
-  //  Progress lives only in this browser's localStorage. Export writes it to a
-  //  JSON file; import merges a file back in (e.g. from another device).
+  //  PROGRESS: FILE SYNC, EXPORT / IMPORT / RESET
+  //  localStorage is the working copy. On top of it, the user can connect a
+  //  progress file (Chromium: File System Access API) that every change is
+  //  autosaved to, and that a later visit — or a browser with cleared storage —
+  //  can resume from. Elsewhere, export/import a backup file by hand.
   // ==========================================================
   var progressLineBtn = document.getElementById("progress-line");
   var progressMenu = document.getElementById("progress-menu");
   var importFile = document.getElementById("import-file");
+  var syncBtn = document.getElementById("btn-sync");
+  var toastEl = document.getElementById("toast");
+  var FS = window.AtlasFileSync || { supported: false };
+  var NUDGED_KEY = "atlas.sync.nudged.v1";
+  var TOUR_KEY = "atlas.tour.v1";
 
-  progressLineBtn.addEventListener("click", function (e) {
-    e.stopPropagation();
-    progressMenu.hidden = !progressMenu.hidden;
-  });
-  document.addEventListener("click", function (e) {
-    if (!progressMenu.hidden && !e.target.closest("#progress-menu") && e.target !== progressLineBtn) progressMenu.hidden = true;
-  });
-  progressMenu.querySelector("[data-act=export]").addEventListener("click", function () { progressMenu.hidden = true; exportProgress(); });
-  progressMenu.querySelector("[data-act=import]").addEventListener("click", function () { progressMenu.hidden = true; importFile.click(); });
-  progressMenu.querySelector("[data-act=reset]").addEventListener("click", function () { progressMenu.hidden = true; resetProgress(); });
-
-  importFile.addEventListener("change", function () {
-    var f = importFile.files && importFile.files[0];
-    if (!f) return;
-    var reader = new FileReader();
-    reader.onload = function () {
-      try { importProgress(JSON.parse(reader.result)); }
-      catch (err) { alert("Couldn't read that file — it doesn't look like a valid Atlas progress export."); }
-      importFile.value = "";
-    };
-    reader.onerror = function () { alert("Couldn't read that file."); importFile.value = ""; };
-    reader.readAsText(f);
-  });
+  // off | saving | saved | needs-access | error   (unsupported browsers stay "off")
+  var sync = { state: "off", name: null, savedAt: null };
 
   function countUnderstood() {
     return Object.keys(progress.understood).filter(function (k) { return nodeById[k]; }).length;
   }
+  function hasAnyProgress() {
+    return countUnderstood() > 0 || Object.keys(progress.best).length > 0 || !!progress.path;
+  }
 
-  function exportProgress() {
-    var payload = {
+  function progressPayload() {
+    return {
       app: "ai-engineering-atlas",
       kind: "progress",
       version: 1,
@@ -1291,21 +1287,14 @@
       totalConcepts: ATLAS.nodes.length,
       progress: progress,
     };
-    var blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
-    var url = URL.createObjectURL(blob);
-    var a = document.createElement("a");
-    a.href = url;
-    a.download = "ai-engineering-atlas-progress-" + new Date().toISOString().slice(0, 10) + ".json";
-    document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
   }
 
-  function importProgress(data) {
+  // Merge incoming progress into ours: union of understood, best quiz score
+  // wins. Their path is adopted only if we have none and adoptPath is true.
+  // Returns null if it isn't progress data.
+  function mergeProgress(data, adoptPath) {
     var inc = (data && data.progress) ? data.progress : data;
-    if (!inc || (typeof inc.understood !== "object" && typeof inc.best !== "object")) {
-      alert("That file doesn't contain Atlas progress data.");
-      return;
-    }
+    if (!inc || (typeof inc.understood !== "object" && typeof inc.best !== "object")) return null;
     var added = 0, skipped = 0;
     if (inc.understood && typeof inc.understood === "object") {
       Object.keys(inc.understood).forEach(function (id) {
@@ -1320,20 +1309,318 @@
         if (!isNaN(v) && (progress.best[id] == null || v > progress.best[id])) progress.best[id] = v;
       });
     }
-    if (!progress.path && isValidGoal(inc.path)) {
-      progress.path = inc.path;
-    }
-    saveProgress();
+    if (adoptPath && !progress.path && isValidGoal(inc.path)) progress.path = inc.path;
     refreshUnderstoodClasses();
     updateProgressLine();
     if (pathState.active) highlightPath();
-    alert("Imported progress — merged in " + added + " newly-understood concept" + (added === 1 ? "" : "s") + ".\n" +
+    return { added: added, skipped: skipped };
+  }
+
+  // ---------- file sync ----------
+  var writeTimer = null;
+  // (sync is undefined until this section runs; saveProgress can fire earlier)
+  function isSyncing() { return !!sync && (sync.state === "saved" || sync.state === "saving" || sync.state === "error"); }
+
+  // called from saveProgress() on every change
+  function scheduleFileWrite() {
+    if (!isSyncing()) return;
+    clearTimeout(writeTimer);
+    writeTimer = setTimeout(writeNow, 500);
+  }
+
+  function writeNow() {
+    clearTimeout(writeTimer);
+    setSync("saving");
+    return FS.write(JSON.stringify(progressPayload(), null, 2)).then(function () {
+      sync.savedAt = new Date();
+      setSync("saved");
+    }).catch(function (e) {
+      // permission revoked / not granted this session → needs a click; anything else → retryable error
+      setSync(e && (e.name === "NotAllowedError" || e.name === "SecurityError") ? "needs-access" : "error");
+    });
+  }
+
+  // Merge a file's text into our progress. Empty file → nothing to merge.
+  // A non-progress file is only overwritten if the user says so.
+  function mergeFileText(text, name) {
+    if (!text || !text.trim()) return { added: 0, skipped: 0 };
+    var data = null;
+    try { data = JSON.parse(text); } catch (e) {}
+    // Local state is newer unless this browser has nothing (the recovery case),
+    // so only then take the file's learning path too.
+    var r = data && mergeProgress(data, !hasAnyProgress());
+    if (r) { saveLocal(); return r; }
+    return confirm("“" + name + "” doesn't look like an Atlas progress file.\n\nReplace its contents with your progress?") ? { added: 0, skipped: 0 } : null;
+  }
+
+  function resumedMessage(r, name) {
+    return r.added
+      ? "Loaded " + r.added + " concept" + (r.added === 1 ? "" : "s") + " from " + name + ". Changes now save there automatically."
+      : "Progress now saves to " + name + " automatically.";
+  }
+
+  // The user declined to overwrite the file they picked: go back to whatever
+  // was connected before (or nothing), rather than silently stop saving.
+  function revertPick() {
+    var wasState = sync.state;
+    FS.revert().then(function (name) {
+      sync.name = name;
+      setSync(name ? (wasState === "off" ? "saved" : wasState) : "off");
+    });
+  }
+
+  function connectFile() {
+    FS.connectNew().then(function (f) {
+      var r = mergeFileText(f.text, f.name);
+      if (!r) { revertPick(); return; }
+      sync.name = f.name;
+      writeNow();
+      showToast(resumedMessage(r, f.name));
+    }).catch(pickerError);
+  }
+
+  function openFile() {
+    if (!FS.supported) { importFile.click(); return; }
+    FS.openExisting().then(function (f) {
+      var r = mergeFileText(f.text, f.name);
+      if (!r) { revertPick(); return; }
+      sync.name = f.name;
+      return FS.requestAccess().then(function (ok) {
+        if (ok) { writeNow(); showToast(resumedMessage(r, f.name)); }
+        else setSync("needs-access");
+      });
+    }).catch(pickerError);
+  }
+
+  // After a reload the browser needs one click to let us write again.
+  function reconnect() {
+    FS.requestAccess().then(function (ok) {
+      if (!ok) { setSync("needs-access"); return; }
+      return FS.read().then(function (text) {
+        var r = mergeFileText(text, sync.name);
+        if (!r) { stopSync(); return; }
+        writeNow();
+        showToast(r.added ? resumedMessage(r, sync.name) : "Picked up where you left off — saving to " + sync.name + ".");
+      });
+    }).catch(function () { setSync("error"); });
+  }
+
+  function stopSync() {
+    FS.disconnect();
+    sync.name = null; sync.savedAt = null;
+    setSync("off");
+  }
+
+  function pickerError(e) {
+    if (e && e.name === "AbortError") return;   // user cancelled the picker
+    alert("Couldn't use that file" + (e && e.message ? ": " + e.message : "."));
+  }
+
+  // ---------- header chip ----------
+  function setSync(state) {
+    sync.state = state;
+    syncBtn.setAttribute("data-state", FS.supported ? state : "unsupported");
+    syncBtn.classList.toggle("warn", !FS.supported ? false : state === "off" && hasAnyProgress());
+    var label, title;
+    if (!FS.supported) {
+      label = "Back up";
+      title = "Your progress is stored in this browser. Download a backup file so it's never lost.";
+    } else if (state === "off") {
+      label = "Save to file";
+      title = "Progress is only in this browser right now. Pick a file and it'll save there automatically.";
+    } else if (state === "saving") {
+      label = "Saving…"; title = "Saving to " + sync.name;
+    } else if (state === "saved") {
+      label = "Saved";
+      title = "Autosaving to " + sync.name + (sync.savedAt ? " · last saved " + sync.savedAt.toLocaleTimeString() : "");
+    } else if (state === "needs-access") {
+      label = "Resume progress";
+      title = "Click to let the atlas read and save " + sync.name + " again (browsers ask once per visit).";
+    } else {
+      label = "Save failed"; title = "Saving to " + sync.name + " failed. Click to try again.";
+    }
+    syncBtn.querySelector(".sync-label").textContent = label;
+    syncBtn.title = title;
+    if (!progressMenu.hidden) renderProgressMenu();
+  }
+
+  syncBtn.addEventListener("click", function (e) {
+    e.stopPropagation();
+    if (sync.state === "needs-access") { reconnect(); return; }
+    if (sync.state === "error") { writeNow(); return; }
+    toggleProgressMenu(syncBtn);
+  });
+
+  // ---------- progress menu ----------
+  function renderProgressMenu() {
+    var h = '<div class="pm-section">Progress file</div>';
+    if (!FS.supported) {
+      h += '<p class="pm-note">This browser can’t save to a file automatically (Chrome or Edge can). Download a backup now and then, and load it here if this browser’s data is ever cleared.</p>' +
+        item("export", "⭳", "Download a backup") +
+        item("import", "⭱", "Load a backup file…");
+    } else if (sync.state === "off") {
+      h += '<p class="pm-note">Right now your progress lives only in this browser. Save it to a file and every change is saved there automatically — and you can resume from it anywhere.</p>' +
+        item("connect", "💾", "Save progress to a file…", "primary") +
+        item("open", "📂", "Continue from an existing file…");
+    } else {
+      h += '<p class="pm-note">' + (sync.state === "needs-access"
+        ? "Your progress file is <strong>" + escapeHtml(sync.name) + "</strong>. Your browser needs a click to let the atlas use it again."
+        : "Autosaving to <strong>" + escapeHtml(sync.name) + "</strong>" + (sync.savedAt ? " · last saved " + sync.savedAt.toLocaleTimeString() : "") + ".") + "</p>";
+      if (sync.state === "needs-access") h += item("reconnect", "↻", "Resume from " + sync.name, "primary");
+      h += item("connect", "💾", "Save to a different file…") +
+        item("open", "📂", "Continue from a different file…") +
+        item("stop", "⏻", sync.state === "needs-access" ? "Forget this file" : "Stop saving to this file");
+    }
+    h += '<div class="pm-divider"></div>';
+    if (FS.supported) h += item("export", "⭳", "Download a copy") + item("import", "⭱", "Import & merge a file…");
+    h += item("reset", "↺", "Reset progress", "danger");
+    progressMenu.innerHTML = h;
+  }
+  function item(act, icon, label, cls) {
+    return '<button type="button" role="menuitem" data-act="' + act + '"' + (cls ? ' class="' + cls + '"' : "") + ">" +
+      '<span class="pm-icon" aria-hidden="true">' + icon + "</span>" + escapeHtml(label) + "</button>";
+  }
+
+  function toggleProgressMenu(anchor) {
+    if (!progressMenu.hidden && progressMenu.__anchor === anchor) { progressMenu.hidden = true; return; }
+    renderProgressMenu();
+    progressMenu.__anchor = anchor;
+    progressMenu.hidden = false;
+    var r = anchor.getBoundingClientRect(), w = progressMenu.offsetWidth;
+    progressMenu.style.top = (r.bottom + 8) + "px";
+    progressMenu.style.left = Math.max(12, Math.min(r.left, window.innerWidth - w - 12)) + "px";
+  }
+
+  progressLineBtn.addEventListener("click", function (e) { e.stopPropagation(); toggleProgressMenu(progressLineBtn); });
+  document.addEventListener("click", function (e) {
+    if (!progressMenu.hidden && !e.target.closest("#progress-menu")) progressMenu.hidden = true;
+  });
+  progressMenu.addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-act]");
+    if (!b) return;
+    progressMenu.hidden = true;
+    var act = b.getAttribute("data-act");
+    if (act === "connect") connectFile();
+    else if (act === "open") openFile();
+    else if (act === "reconnect") reconnect();
+    else if (act === "stop") stopSync();
+    else if (act === "export") exportProgress();
+    else if (act === "import") importFile.click();
+    else if (act === "reset") resetProgress();
+  });
+
+  // ---------- toast ----------
+  // showToast(message, [{ label, primary, onClick }], { sticky })
+  var toastTimer = null;
+  function showToast(msg, actions, opts) {
+    opts = opts || {};
+    clearTimeout(toastTimer);
+    toastEl.innerHTML = '<span class="toast-msg">' + escapeHtml(msg) + "</span>" +
+      (actions || []).map(function (a, i) {
+        return '<button type="button" data-i="' + i + '"' + (a.primary ? ' class="primary"' : "") + ">" + escapeHtml(a.label) + "</button>";
+      }).join("") +
+      '<button type="button" class="toast-x" aria-label="Dismiss">✕</button>';
+    toastEl.hidden = false;
+    toastEl.querySelectorAll("button[data-i]").forEach(function (b) {
+      b.addEventListener("click", function () { hideToast(); actions[+b.getAttribute("data-i")].onClick(); });
+    });
+    toastEl.querySelector(".toast-x").addEventListener("click", function () { hideToast(); if (opts.onDismiss) opts.onDismiss(); });
+    if (!opts.sticky) toastTimer = setTimeout(hideToast, 6000);
+  }
+  function hideToast() { clearTimeout(toastTimer); toastEl.hidden = true; }
+
+  // First time something is learned and nothing is backing it up: suggest it once.
+  function maybeNudgeSave() {
+    if (isSyncing() || sync.state === "needs-access") return;
+    try { if (localStorage.getItem(NUDGED_KEY)) return; localStorage.setItem(NUDGED_KEY, "1"); } catch (e) { return; }
+    showToast(FS.supported
+      ? "Nice! Your progress is saved in this browser only. Save it to a file and it’ll be kept safe automatically."
+      : "Nice! Your progress is saved in this browser only. Download a backup so it’s never lost.",
+      [FS.supported
+        ? { label: "Save to a file", primary: true, onClick: connectFile }
+        : { label: "Download backup", primary: true, onClick: exportProgress }],
+      { sticky: true });
+  }
+
+  // ---------- startup: resume a remembered file, or offer recovery ----------
+  function afterTour(fn) {
+    var seen = false;
+    try { seen = !!localStorage.getItem(TOUR_KEY); } catch (e) { seen = true; }
+    if (seen) fn();
+    else document.addEventListener("atlas:tour-end", function once() {
+      document.removeEventListener("atlas:tour-end", once);
+      fn();
+    });
+  }
+
+  function offerRecovery() {
+    if (hasAnyProgress() || isSyncing()) return;
+    showToast("Been here before? If you have a progress file, open it to pick up where you left off.",
+      [{ label: FS.supported ? "Open my progress file" : "Load a backup", primary: true, onClick: openFile }],
+      { sticky: true });
+  }
+
+  setSync("off");
+  if (FS.supported) {
+    FS.restore().then(function (r) {
+      if (!r) { afterTour(offerRecovery); return; }
+      sync.name = r.name;
+      if (r.permission === "granted") {
+        // browser kept our access (e.g. "allow on every visit"): resume silently
+        FS.read().then(function (text) {
+          var m = mergeFileText(text, r.name);
+          if (!m) { stopSync(); return; }
+          writeNow();
+          if (m.added) showToast(resumedMessage(m, r.name));
+        }).catch(function () { setSync("needs-access"); });
+      } else {
+        setSync("needs-access");
+        afterTour(function () {
+          showToast("Welcome back! Resume from your progress file, " + r.name + "?",
+            [{ label: "Resume", primary: true, onClick: reconnect }], { sticky: true });
+        });
+      }
+    });
+  } else {
+    afterTour(offerRecovery);
+  }
+
+  // ---------- export / import / reset ----------
+  importFile.addEventListener("change", function () {
+    var f = importFile.files && importFile.files[0];
+    if (!f) return;
+    var reader = new FileReader();
+    reader.onload = function () {
+      try { importProgress(JSON.parse(reader.result)); }
+      catch (err) { alert("Couldn't read that file — it doesn't look like a valid Atlas progress export."); }
+      importFile.value = "";
+    };
+    reader.onerror = function () { alert("Couldn't read that file."); importFile.value = ""; };
+    reader.readAsText(f);
+  });
+
+  function exportProgress() {
+    var blob = new Blob([JSON.stringify(progressPayload(), null, 2)], { type: "application/json" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = "ai-engineering-atlas-progress-" + new Date().toISOString().slice(0, 10) + ".json";
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  }
+
+  function importProgress(data) {
+    var r = mergeProgress(data, true);
+    if (!r) { alert("That file doesn't contain Atlas progress data."); return; }
+    saveProgress();
+    alert("Imported progress — merged in " + r.added + " newly-understood concept" + (r.added === 1 ? "" : "s") + ".\n" +
       "You now have " + countUnderstood() + " of " + ATLAS.nodes.length + " marked understood." +
-      (skipped ? "\n(" + skipped + " entr" + (skipped === 1 ? "y" : "ies") + " skipped — not in this version of the atlas.)" : ""));
+      (r.skipped ? "\n(" + r.skipped + " entr" + (r.skipped === 1 ? "y" : "ies") + " skipped — not in this version of the atlas.)" : ""));
   }
 
   function resetProgress() {
-    if (!confirm("Reset your progress?\n\nThis clears every concept you've marked understood, your quiz scores, and your saved path. It only affects this browser and can't be undone.")) return;
+    var where = isSyncing() ? "in this browser and in " + sync.name : "in this browser";
+    if (!confirm("Reset your progress?\n\nThis clears every concept you've marked understood, your quiz scores, and your saved path " + where + ". It can't be undone.")) return;
     progress.understood = {}; progress.best = {}; delete progress.path;
     saveProgress();
     if (pathState.active) exitPath();
