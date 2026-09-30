@@ -34,6 +34,9 @@ python3 -m http.server 8000
 - **Quiz** — take the quiz at the end of a lesson. Score ≥ 75% and the node is marked
   understood (saved in your browser's `localStorage`). Come back a few days later to
   re-quiz — spacing is what moves knowledge into long-term memory.
+- **Already know it?** Click **I already know this** on a lesson to skip it. It's
+  marked separately from quiz-verified concepts (dashed ring on the graph, ◐ in a path),
+  learning paths move past it, and passing its quiz later upgrades it to understood.
 - **Keep your progress safe:** progress is kept in your browser. Click **Save to file**
   in the top bar and pick where to keep a progress file. From then on every change is
   saved to it automatically, and the chip shows whether it's saved. On your next visit,

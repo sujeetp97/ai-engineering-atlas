@@ -139,9 +139,16 @@ practice. Hold new content to the same standard as the existing nodes:
 **Quizzes**
 - Test **understanding**, not trivia. A learner who read the lesson should pass;
   one who skimmed should not.
-- Give ~4 options. Make distractors plausible.
-- **Don't leak the answer through formatting** — keep options similar in length and
-  style (the correct one shouldn't be the longest/most-detailed).
+- Prefer **application over recall**: a short scenario ("you're building X and see Y,
+  what do you try first?") beats "X is defined as…".
+- Give ~4 options. Make distractors plausible: real misconceptions or near-misses a
+  skimmer would pick. Avoid throwaways like "It is a typo" or "Never".
+- **Don't leak the answer through formatting.** Keep options similar in length and
+  style; the correct one shouldn't be the longest or most detailed. The validator
+  reports length giveaways (correct option ≥1.5× the average distractor); run
+  `node tools/validate.js --quiz` to list them.
+- Options are **shuffled on screen** on every attempt, so write them in any order.
+  `answer` is the index in the authored order.
 - Every question gets an `explain` that teaches, not just confirms.
 
 ---
