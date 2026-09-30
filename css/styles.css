@@ -106,18 +106,64 @@ html, body {
 #progress-line:hover { color: var(--ink); }
 #progress-line::after { content: "▾"; font-size: 9px; opacity: .65; }
 #progress-menu {
-  position: absolute; top: 100%; left: 42px; margin-top: 8px; z-index: 50;
+  position: fixed; z-index: 60;           /* top/left set by app.js from the trigger */
   background: var(--card); border: 1px solid var(--line-strong); border-radius: 10px;
-  box-shadow: var(--shadow); padding: 6px; min-width: 200px;
+  box-shadow: var(--shadow); padding: 6px; width: 300px; max-width: calc(100vw - 24px);
 }
 #progress-menu[hidden] { display: none; }
+#progress-menu .pm-section {
+  padding: 8px 12px 2px; font-size: 10.5px; font-weight: 600; letter-spacing: 1px;
+  text-transform: uppercase; color: var(--muted);
+}
+#progress-menu .pm-note { margin: 4px 12px 8px; font-size: 12.5px; line-height: 1.5; color: var(--muted); }
+#progress-menu .pm-note strong { color: var(--ink); font-weight: 600; word-break: break-all; }
+#progress-menu .pm-divider { height: 1px; background: var(--line); margin: 6px 4px; }
 #progress-menu button {
-  display: block; width: 100%; text-align: left; border: none; background: none; color: var(--ink);
+  display: flex; align-items: center; gap: 9px; width: 100%; text-align: left; border: none; background: none; color: var(--ink);
   padding: 9px 12px; border-radius: 7px; font-size: 13px; cursor: pointer; font-family: var(--font-body);
 }
+#progress-menu .pm-icon { width: 16px; text-align: center; flex: none; opacity: .8; }
 #progress-menu button:hover { background: var(--paper-2); }
+#progress-menu button.primary { color: var(--accent); font-weight: 600; }
 #progress-menu button.danger { color: var(--bad); }
 #progress-menu button.danger:hover { background: var(--bad-soft); }
+
+/* save-progress chip in the top bar */
+.sync-chip {
+  display: inline-flex; align-items: center; gap: 7px; flex: 0 1 auto; min-width: 0; max-width: 230px;
+  border: 1px solid var(--line-strong); background: var(--card); color: var(--ink);
+  padding: 7px 12px; border-radius: 999px; font-size: 12.5px; font-weight: 500;
+  cursor: pointer; font-family: var(--font-body);
+}
+.sync-chip:hover { border-color: var(--accent); }
+.sync-chip .sync-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sync-dot { width: 8px; height: 8px; border-radius: 50%; flex: none; background: var(--muted); }
+.sync-chip[data-state="saved"] .sync-dot { background: var(--ok); }
+.sync-chip[data-state="saving"] .sync-dot { background: var(--ok); animation: sync-pulse .8s ease-in-out infinite alternate; }
+.sync-chip.warn .sync-dot, .sync-chip[data-state="needs-access"] .sync-dot { background: var(--accent); }
+.sync-chip[data-state="needs-access"] { border-color: var(--accent); color: var(--accent); }
+.sync-chip[data-state="error"] { border-color: var(--bad); color: var(--bad); }
+.sync-chip[data-state="error"] .sync-dot { background: var(--bad); }
+@keyframes sync-pulse { from { opacity: 1; } to { opacity: .3; } }
+
+/* toast: save nudges, resume and recovery prompts */
+#toast {
+  position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%); z-index: 250;
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  width: max-content; max-width: min(560px, calc(100vw - 32px));
+  padding: 12px 12px 12px 16px; border-radius: 12px;
+  background: var(--card); color: var(--ink); border: 1px solid var(--line-strong); box-shadow: var(--shadow);
+  font-size: 13px; line-height: 1.45;
+}
+#toast[hidden] { display: none; }
+#toast .toast-msg { flex: 1 1 240px; }
+#toast button {
+  border: 1px solid var(--line-strong); background: var(--card); color: var(--ink); white-space: nowrap;
+  padding: 7px 12px; border-radius: 8px; font-size: 12.5px; font-weight: 500; cursor: pointer; font-family: var(--font-body);
+}
+#toast button.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+#toast .toast-x { border: none; background: none; color: var(--muted); padding: 6px 8px; }
+#toast .toast-x:hover { color: var(--ink); }
 
 .search-wrap { position: relative; flex: 1; max-width: 560px; }
 #search {
@@ -549,6 +595,8 @@ html, body {
   .brand { min-width: 0; }
   #topbar { gap: 10px; padding: 0 12px; }
   .topbar-actions { display: none; }
+  .sync-chip { padding: 9px; }
+  .sync-chip .sync-label { display: none; }   /* dot only; title + menu explain */
   #legend { max-width: 150px; top: calc(var(--topbar-h) + 8px); left: 8px; }
   .p-title { font-size: 23px; }
 }
