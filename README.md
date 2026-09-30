@@ -38,9 +38,12 @@ python3 -m http.server 8000
   using. Click the progress line (under the title) to **Export** it to a JSON file, then
   **Import** that file on another device/browser to merge it in. The same menu has a
   **Reset**.
-- **Learning Path** — click **◆ Learning Path**, pick a destination (search for a concept
-  or domain, pick a whole domain, or take the complete curriculum), and the atlas orders
-  the prerequisites for you into a numbered, checkable itinerary, skipping anything you've
+- **Learning Path** — click **◆ Learning Path** and start with a **path for your role**:
+  *Using AI at work* (no technical background needed), *AI for product managers*,
+  *AI engineer*, or *ML & research foundations*. Each is a hand-picked sequence covering
+  what that role needs, and nothing more. Or **build your own**: search for a concept or
+  domain, pick a whole domain, or take the complete curriculum, and the atlas orders
+  every prerequisite for you into a numbered, checkable itinerary, skipping anything you've
   already mastered. The graph then shows **only that path**, laid out left to right in
   learning order (wrapping into rows for long paths). Untick *Show only this path* to see
   it highlighted in the full atlas. Exiting restores the full graph as it was. Each quiz
@@ -70,6 +73,7 @@ data/_registry.js     Global registry every data file appends to
 data/00-clusters.js   The eight domains
 data/10..80-*.js      Nodes (concepts) per domain
 data/99-edges.js      The links between concepts
+data/90-paths.js      Curated, role-based learning paths
 vendor/               Cytoscape.js + fcose layout (vendored for offline use)
 ```
 

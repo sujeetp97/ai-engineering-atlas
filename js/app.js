@@ -823,10 +823,19 @@
   // ordering adjacency (prereq/enables/partof imply "learn source before target")
   var ORDER_TYPES = { prereq: 1, enables: 1, partof: 1 };
   var fwdOrder = {}, revOrder = {};
-  ATLAS.nodes.forEach(function (n) { fwdOrder[n.id] = []; revOrder[n.id] = []; });
+  // revDep: real dependencies only (prereq/enables). Curated paths may put an
+  // overview before its parts, so they ignore "partof" (same rule as the validator).
+  var revDep = {};
+  ATLAS.nodes.forEach(function (n) { fwdOrder[n.id] = []; revOrder[n.id] = []; revDep[n.id] = []; });
   validEdges.forEach(function (e) {
     if (ORDER_TYPES[e.type]) { fwdOrder[e.source].push(e.target); revOrder[e.target].push(e.source); }
+    if (e.type === "prereq" || e.type === "enables") revDep[e.target].push(e.source);
   });
+
+  // Curated, role-based paths (data/90-paths.js): an explicit, ordered list of
+  // steps — never expanded with prerequisites.
+  var curatedById = {};
+  (ATLAS.paths || []).forEach(function (p) { curatedById[p.id] = p; });
 
   function firstUnmastered(seq) {
     for (var i = 0; i < seq.length; i++) if (!isUnderstood(seq[i])) return seq[i];
@@ -834,6 +843,10 @@
   }
 
   function computeSequence(goal) {
+    if (goal.type === "curated") {
+      var cp = curatedById[goal.id];
+      return cp ? cp.steps.filter(function (id) { return nodeById[id]; }) : [];
+    }
     var targets;
     if (goal.type === "all") targets = ATLAS.nodes.map(function (n) { return n.id; });
     else if (goal.type === "cluster") targets = ATLAS.nodes.filter(function (n) { return n.cluster === goal.id; }).map(function (n) { return n.id; });
@@ -883,14 +896,14 @@
   // (a node sits one layer after its deepest prerequisite on the path). Layers
   // run left to right; when that gets too wide for the screen they wrap into
   // bands that read like lines of text, so a long chain still fits legibly.
-  function pathLayoutPositions(seq, view) {
+  function pathLayoutPositions(seq, view, rev) {
     var onPath = {}, idx = {};
     seq.forEach(function (id, i) { onPath[id] = 1; idx[id] = i; });
     // seq is topologically ordered, so each node's prereqs are already placed
     var depth = {};
     seq.forEach(function (id) {
       var d = 0;
-      revOrder[id].forEach(function (p) { if (onPath[p] && depth[p] != null) d = Math.max(d, depth[p] + 1); });
+      rev[id].forEach(function (p) { if (onPath[p] && depth[p] != null) d = Math.max(d, depth[p] + 1); });
       depth[id] = d;
     });
     var layers = [];
@@ -902,7 +915,7 @@
     layers.forEach(function (layer) {
       var bary = {};
       layer.forEach(function (id) {
-        var ys = revOrder[id].filter(function (p) { return local[p]; }).map(function (p) { return local[p].y; });
+        var ys = rev[id].filter(function (p) { return local[p]; }).map(function (p) { return local[p].y; });
         bary[id] = ys.length ? ys.reduce(function (a, b) { return a + b; }, 0) / ys.length : 0;
       });
       layer.sort(function (a, b) { return (bary[a] - bary[b]) || (idx[a] - idx[b]); });
@@ -946,7 +959,8 @@
 
   function layoutPathView() {
     var box = document.getElementById("cy");
-    var pos = pathLayoutPositions(pathState.sequence, { w: box.clientWidth || 800, h: box.clientHeight || 600 });
+    var rev = pathState.goal && pathState.goal.type === "curated" ? revDep : revOrder;
+    var pos = pathLayoutPositions(pathState.sequence, { w: box.clientWidth || 800, h: box.clientHeight || 600 }, rev);
     cy.nodes().stop(true);   // drop any in-flight animation so the new one wins
     cy.nodes(":visible").layout({
       name: "preset", positions: function (n) { return pos[n.id()]; },
@@ -1018,13 +1032,22 @@
     if (!g) return "";
     if (g.type === "all") return "The complete curriculum";
     if (g.type === "cluster") return CL[g.id] ? CL[g.id].label : g.id;
+    if (g.type === "curated") return curatedById[g.id] ? curatedById[g.id].label : g.id;
     return nodeById[g.id] ? nodeById[g.id].label : g.id;
+  }
+
+  function isValidGoal(g) {
+    if (!g) return false;
+    if (g.type === "all") return true;
+    if (g.type === "curated") return !!curatedById[g.id];
+    if (g.type === "cluster") return !!CL[g.id];
+    return !!nodeById[g.id];
   }
 
   function openPathPanel() {
     panel.hidden = false; scrim.hidden = false; panelScroll.scrollTop = 0;
     if (pathState.active) renderPathItinerary();
-    else if (progress.path) startPath(progress.path);
+    else if (isValidGoal(progress.path)) startPath(progress.path);
     else renderPathSetup();
     setPathBtn();
   }
@@ -1056,7 +1079,22 @@
     var html = "";
     html += '<span class="p-cluster-tag" style="background:var(--accent-soft);color:var(--accent)">◆ Learning Path</span>';
     html += '<h2 class="p-title">Chart your path</h2>';
-    html += '<p class="p-short">Pick a destination. The atlas orders its prerequisites for you and skips anything you’ve already mastered.</p>';
+    html += '<p class="p-short">Start with the path that fits your role. Each one covers just what that role needs.</p>';
+
+    html += '<div class="path-goal-group"><h4>Paths by role</h4><div class="role-paths">';
+    (ATLAS.paths || []).forEach(function (p) {
+      var seq = computeSequence({ type: "curated", id: p.id });
+      var done = seq.filter(isUnderstood).length;
+      html += '<button class="role-card" data-gtype="curated" data-gid="' + escapeHtml(p.id) + '">' +
+        '<span class="rc-title">' + escapeHtml(p.label) + "</span>" +
+        '<span class="rc-audience">' + escapeHtml(p.audience || "") + "</span>" +
+        '<span class="rc-meta">' + seq.length + " steps" + (done ? " · " + done + " already mastered" : "") + "</span>" +
+        "</button>";
+    });
+    html += "</div></div>";
+
+    html += '<div class="path-build-own"><h3>Or build your own path</h3>' +
+      '<p>Pick any destination and the atlas includes <em>everything</em> it depends on, math included, in order.</p>';
 
     html += '<div class="path-goal-group"><h4>Master a whole domain</h4><div class="path-goals">';
     Object.keys(CL).forEach(function (cid) {
@@ -1067,20 +1105,24 @@
 
     html += '<div class="path-goal-group"><h4>Or reach one concept</h4>' +
       '<input id="path-goal-search" type="text" autocomplete="off" spellcheck="false" ' +
-      'placeholder="Search for a concept or domain — e.g. agents, evals, transformers…" />' +
+      'placeholder="Search for a role, domain or concept — e.g. product, agents, evals…" />' +
       '<ul id="path-goal-results" class="goal-results" role="listbox"></ul></div>';
 
     html += '<div class="path-goal-group"><button class="btn-secondary" data-gtype="all" style="width:100%">The complete curriculum — everything, in order</button></div>';
+    html += "</div>";
 
     panelScroll.innerHTML = html;
     panelScroll.querySelectorAll(".path-goal-btn").forEach(function (b) {
       b.addEventListener("click", function () { startPath({ type: "cluster", id: b.getAttribute("data-gid") }); });
     });
     panelScroll.querySelector("[data-gtype=all]").addEventListener("click", function () { startPath({ type: "all" }); });
+    panelScroll.querySelectorAll(".role-card").forEach(function (b) {
+      b.addEventListener("click", function () { startPath({ type: "curated", id: b.getAttribute("data-gid") }); });
+    });
     wireGoalSearch(panelScroll.querySelector("#path-goal-search"), panelScroll.querySelector("#path-goal-results"));
   }
 
-  // Type-ahead for choosing a path goal: matching domains first, then concepts.
+  // Type-ahead for choosing a path goal: role paths, then domains, then concepts.
   // Each row shows how many steps that path would take.
   function wireGoalSearch(input, list) {
     var active = -1, items = [];
@@ -1091,6 +1133,15 @@
       if (!q) { list.innerHTML = ""; items = []; return; }
       var terms = AtlasSearch.terms(q);
       var html = "";
+      (ATLAS.paths || []).forEach(function (p) {
+        var hay = p.label + " " + (p.audience || "") + " " + (p.blurb || "");
+        if (!terms.every(function (t) { return AtlasSearch.matchRanges(hay, t).length; })) return;
+        html += '<li data-gtype="curated" data-gid="' + escapeHtml(p.id) + '"><div class="r-row">' +
+          '<span class="dot role-dot"></span>' +
+          '<span class="r-label">' + markMatches(p.label, q) + "</span>" +
+          '<span class="r-cluster">Role path · ' + p.steps.length + " steps</span></div>" +
+          '<div class="r-snippet">' + markMatches(p.audience || "", q) + "</div></li>";
+      });
       Object.keys(CL).forEach(function (cid) {
         var c = CL[cid];
         if (!terms.every(function (t) { return AtlasSearch.matchRanges(c.label, t).length; })) return;
@@ -1136,6 +1187,8 @@
     var html = "";
     html += '<span class="p-cluster-tag" style="background:var(--accent-soft);color:var(--accent)">◆ Learning Path</span>';
     html += '<h2 class="p-title">' + escapeHtml(goalLabel()) + "</h2>";
+    var cp = pathState.goal.type === "curated" && curatedById[pathState.goal.id];
+    if (cp) html += '<p class="p-short">' + escapeHtml(cp.blurb || "") + "</p>";
     html += '<div class="path-progress"><div class="path-progress-bar"><span style="width:' + pct + '%"></span></div>' +
             '<div class="path-progress-label">' + done + " of " + seq.length + " concepts mastered · " + pct + "%</div></div>";
 
@@ -1267,7 +1320,7 @@
         if (!isNaN(v) && (progress.best[id] == null || v > progress.best[id])) progress.best[id] = v;
       });
     }
-    if (!progress.path && inc.path && (inc.path.type === "all" || nodeById[inc.path.id] || CL[inc.path.id])) {
+    if (!progress.path && isValidGoal(inc.path)) {
       progress.path = inc.path;
     }
     saveProgress();

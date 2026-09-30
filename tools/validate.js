@@ -23,6 +23,7 @@ const FILES = [
   "70-using-ai.js",
   "80-cross-cutting.js",
   "99-edges.js",
+  "90-paths.js",
 ];
 
 const EDGE_TYPES = ["prereq", "partof", "enables", "uses", "related"];
@@ -145,6 +146,53 @@ if (nodes.length) {
   if (cycle) err(`Prerequisite cycle detected (breaks learning paths): ${cycle.join(" -> ")}`);
 })();
 
+// curated learning paths (data/90-paths.js)
+(function checkPaths() {
+  const paths = ATLAS.paths || [];
+  const pathIds = {};
+  // Curated paths honour real dependencies (prereq/enables) but may put an
+  // overview before its parts: "partof" orders parts-before-whole for the
+  // goal-driven paths, while a curated path can use the overview as an intro.
+  const revDag = {};
+  nodes.forEach((n) => { revDag[n.id] = []; });
+  edges.forEach((e) => {
+    if ((e.type === "prereq" || e.type === "enables") && revDag[e.target] && byId[e.source]) revDag[e.target].push(e.source);
+  });
+  // ancestors(x) = every node that must be learned before x, transitively
+  const ancestors = {};
+  function anc(id) {
+    if (ancestors[id]) return ancestors[id];
+    const out = new Set(); ancestors[id] = out;
+    (revDag[id] || []).forEach((p) => { out.add(p); anc(p).forEach((a) => out.add(a)); });
+    return out;
+  }
+
+  paths.forEach((p, i) => {
+    const tag = `Path #${i} "${p.id || "?"}"`;
+    if (!p.id) err(`${tag} has no id`);
+    else if (pathIds[p.id]) err(`Duplicate path id "${p.id}"`);
+    else pathIds[p.id] = 1;
+    if (!p.label) err(`${tag} has no label`);
+    if (!p.audience) warn(`${tag} has no audience line`);
+    if (!Array.isArray(p.steps) || !p.steps.length) { err(`${tag} has no steps`); return; }
+    const seen = {};
+    p.steps.forEach((id) => {
+      if (!byId[id]) err(`${tag} step "${id}" is not a node id`);
+      if (seen[id]) err(`${tag} lists "${id}" more than once`);
+      seen[id] = 1;
+    });
+    // order must respect prerequisites among the path's own steps
+    const pos = {};
+    p.steps.forEach((id, k) => { pos[id] = k; });
+    p.steps.forEach((id) => {
+      if (!byId[id]) return;
+      anc(id).forEach((a) => {
+        if (pos[a] != null && pos[a] > pos[id]) err(`${tag}: "${a}" must come before "${id}" (it's a prerequisite)`);
+      });
+    });
+  });
+})();
+
 // ---- report ----
 const clusterCounts = {};
 nodes.forEach((n) => { clusterCounts[n.cluster] = (clusterCounts[n.cluster] || 0) + 1; });
@@ -154,6 +202,7 @@ console.log("--------------------------------------");
 console.log(`Clusters : ${Object.keys(clusters).length}`);
 console.log(`Nodes    : ${nodes.length}  (${Object.entries(clusterCounts).map(([k, v]) => `${k}:${v}`).join("  ")})`);
 console.log(`Edges    : ${edges.length}`);
+console.log(`Paths    : ${(ATLAS.paths || []).map((p) => `${p.id}(${(p.steps || []).length})`).join("  ")}`);
 console.log(`Avg degree: ${(edges.length * 2 / (nodes.length || 1)).toFixed(1)}`);
 console.log("");
 

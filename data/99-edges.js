@@ -134,7 +134,7 @@ ATLAS.addEdges([
   { source: "tool-use", target: "ai-agents", type: "enables" },
   { source: "ai-agents", target: "multi-agent-systems", type: "prereq" },
   { source: "tool-use", target: "mcp", type: "related" },
-  { source: "mcp", target: "tool-use", type: "enables" },
+  { source: "tool-use", target: "mcp", type: "enables" },
   { source: "prompt-engineering", target: "ai-agents", type: "prereq" },
   { source: "prompt-engineering", target: "context-engineering", type: "prereq" },
   { source: "structured-output", target: "tool-use", type: "related" },

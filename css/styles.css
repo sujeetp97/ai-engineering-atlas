@@ -423,6 +423,20 @@ html, body {
 }
 .path-goal-btn:hover { border-color: var(--accent); color: var(--accent); }
 .path-goal-btn .dot { width: 8px; height: 8px; border-radius: 50%; }
+.role-paths { display: grid; gap: 10px; }
+.role-card {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 4px; text-align: left;
+  border: 1px solid var(--line-strong); background: var(--card); color: var(--ink);
+  padding: 12px 14px; border-radius: 10px; cursor: pointer; font-family: var(--font-body);
+}
+.role-card:hover { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.role-card .rc-title { font-size: 14.5px; font-weight: 600; }
+.role-card .rc-audience { font-size: 12.5px; color: var(--muted); line-height: 1.45; }
+.role-card .rc-meta { font-size: 11.5px; color: var(--accent); margin-top: 2px; }
+.path-build-own { margin-top: 26px; padding-top: 18px; border-top: 1px solid var(--line); }
+.path-build-own h3 { margin: 0 0 4px; font-size: 15px; }
+.path-build-own > p { margin: 0; font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+.goal-results .role-dot { width: 9px; height: 9px; border-radius: 2px; background: var(--accent); transform: rotate(45deg); flex: none; }
 #path-goal-search {
   width: 100%; padding: 10px 12px; border: 1px solid var(--line-strong); border-radius: 8px;
   background: var(--card); color: var(--ink); font-size: 13.5px; font-family: var(--font-body);

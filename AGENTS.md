@@ -14,6 +14,7 @@ the quality bar, and the recipes. This file is the short version.
 
 ## The golden rules
 1. **Nodes** go in the matching `data/NN-domain.js`. **All edges** go in `data/99-edges.js`.
+   Curated role-based **learning paths** go in `data/90-paths.js` (see `docs/AUTHORING.md`).
 2. **Never leave a node orphaned** — every node needs ≥ 2–3 edges, including a cross-domain
    link where the real dependency exists. Connectivity is the whole point.
 3. **`prereq` / `enables` / `partof` edges must not form a cycle** (they define learning
