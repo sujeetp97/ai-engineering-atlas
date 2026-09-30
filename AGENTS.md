@@ -39,7 +39,8 @@ the quality bar, and the recipes. This file is the short version.
 
 ## Verify before you're done
 ```bash
-node tools/validate.js          # unique ids, valid refs, no orphans, connected, DAG, quiz sanity
+node tools/validate.js          # unique ids, valid refs, no orphans, connected, DAG, paths, quiz sanity
+node tools/validate.js --quiz   # also list quiz questions that give the answer away by length
 ```
 Then load the app and spot-check the new node (Learn renders, Quiz scores, chips navigate):
 ```bash

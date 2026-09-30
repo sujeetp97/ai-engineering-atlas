@@ -328,6 +328,15 @@ html, body {
   padding: 7px 12px; border-radius: 8px; margin-bottom: 18px; font-weight: 500;
 }
 .p-status.learned { background: var(--ok-soft); color: var(--ok); }
+.p-status.known { background: var(--ok-soft); color: var(--ok); border: 1px dashed var(--ok); }
+.p-status.known, .p-status.unlearned { display: flex; align-items: center; gap: 10px; }
+.p-status.known > span, .p-status.unlearned > span { flex: 1; }
+.p-status button {
+  flex: none; border: 1px solid currentColor; background: transparent; color: inherit;
+  padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: var(--font-body);
+}
+.p-status.unlearned button { color: var(--ink); border-color: var(--line-strong); background: var(--card); }
+.p-status.unlearned button:hover { border-color: var(--ok); color: var(--ok); }
 .p-status.unlearned { background: var(--paper-2); color: var(--muted); }
 
 .p-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); margin-bottom: 20px; }
@@ -500,7 +509,11 @@ html, body {
 
 .path-progress { margin: 4px 0 20px; }
 .path-progress-bar { height: 9px; background: var(--paper-2); border-radius: 999px; overflow: hidden; }
-.path-progress-bar span { display: block; height: 100%; background: var(--ok); border-radius: 999px; transition: width .35s ease; }
+.path-progress-bar { display: flex; }
+.path-progress-bar span { display: block; height: 100%; background: var(--ok); transition: width .35s ease; }
+.path-progress-bar span.known {
+  background: repeating-linear-gradient(45deg, var(--ok) 0 4px, transparent 4px 7px); opacity: .7;
+}
 .path-progress-label { font-size: 12px; color: var(--muted); margin-top: 7px; font-variant-numeric: tabular-nums; }
 
 .path-list { list-style: none; margin: 0 0 8px; padding: 0; }
@@ -518,6 +531,8 @@ html, body {
 .path-item .pi-label { font-weight: 500; }
 .path-item.done { opacity: .62; }
 .path-item.done .pi-num { background: var(--ok-soft); color: var(--ok); }
+.path-item.known { opacity: .72; }
+.path-item.known .pi-num { background: var(--ok-soft); color: var(--ok); outline: 1px dashed var(--ok); outline-offset: -1px; }
 .path-item.next { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
 .path-item.next .pi-num { background: var(--accent); color: #fff; }
 

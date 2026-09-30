@@ -27,8 +27,11 @@
   var STORE_KEY = "atlas.progress.v1";
   var progress = loadProgress();
   function loadProgress() {
-    try { return JSON.parse(localStorage.getItem(STORE_KEY)) || { understood: {}, best: {} }; }
-    catch (e) { return { understood: {}, best: {} }; }
+    var p = null;
+    try { p = JSON.parse(localStorage.getItem(STORE_KEY)); } catch (e) {}
+    p = p || {};
+    p.understood = p.understood || {}; p.best = p.best || {}; p.known = p.known || {};
+    return p;
   }
   // localStorage is the working copy; saveProgress also autosaves to the
   // connected progress file, if any (see PROGRESS: FILE SYNC below).
@@ -39,7 +42,11 @@
     saveLocal();
     scheduleFileWrite();
   }
+  // understood = passed the quiz. known = the learner says they already know it
+  // (no quiz). Paths treat both as done; they're counted and drawn separately.
   function isUnderstood(id) { return !!progress.understood[id]; }
+  function isKnown(id) { return !progress.understood[id] && !!progress.known[id]; }
+  function isDone(id) { return isUnderstood(id) || isKnown(id); }
 
   // ---------- index the data ----------
   var nodeById = {};
@@ -130,6 +137,7 @@
         },
       },
       { selector: "node.understood", style: { "border-color": "#2f7d4f", "border-width": 4, "border-opacity": 1 } },
+      { selector: "node.known", style: { "border-color": "#2f7d4f", "border-width": 3, "border-style": "dashed", "border-opacity": 0.9 } },
       {
         selector: "edge",
         style: {
@@ -223,6 +231,7 @@
     cy.batch(function () {
       cy.nodes().forEach(function (n) {
         n.toggleClass("understood", isUnderstood(n.id()));
+        n.toggleClass("known", isKnown(n.id()));
       });
     });
   }
@@ -292,9 +301,11 @@
   function updateProgressLine() {
     var total = ATLAS.nodes.length;
     var done = Object.keys(progress.understood).filter(function (k) { return nodeById[k]; }).length;
+    var known = ATLAS.nodes.filter(function (n) { return isKnown(n.id); }).length;
     var pct = Math.round((done / total) * 100);
     document.getElementById("progress-line").textContent =
-      total + " concepts · " + validEdges.length + " links · " + done + " understood (" + pct + "%)";
+      total + " concepts · " + validEdges.length + " links · " + done + " understood (" + pct + "%)" +
+      (known ? " · " + known + " known" : "");
   }
   updateProgressLine();
 
@@ -457,7 +468,7 @@
     var c = CL[n.cluster];
     tooltip.innerHTML =
       '<div class="tt-cluster">' + (c ? c.label : "") + "</div>" +
-      '<div class="tt-title">' + escapeHtml(n.label) + (isUnderstood(n.id) ? " ✓" : "") + "</div>" +
+      '<div class="tt-title">' + escapeHtml(n.label) + (isUnderstood(n.id) ? " ✓" : isKnown(n.id) ? " (known)" : "") + "</div>" +
       "<div>" + escapeHtml(n.short || "") + "</div>";
     tooltip.hidden = false;
   });
@@ -541,8 +552,12 @@
 
     if (learned) {
       html += '<div class="p-status learned">✓ Understood' + (best != null ? " — best quiz " + best + "/" + quizCount : "") + "</div>";
+    } else if (isKnown(n.id)) {
+      html += '<div class="p-status known"><span>◐ Marked as already known — take the quiz any time to confirm it</span>' +
+        '<button type="button" data-action="unmark-known">Undo</button></div>';
     } else {
-      html += '<div class="p-status unlearned">○ Not yet checked — read, then take the quiz to confirm</div>';
+      html += '<div class="p-status unlearned"><span>○ Not yet checked — read, then take the quiz to confirm</span>' +
+        '<button type="button" data-action="mark-known" title="Skip this one — it won\'t count as quiz-verified">I already know this</button></div>';
     }
 
     html += '<div class="p-tabs">' +
@@ -564,6 +579,12 @@
         var tid = chip.getAttribute("data-id");
         focusNode(tid); openPanel(tid);
       });
+    });
+    // already-known toggle
+    var knownBtn = panelScroll.querySelector("[data-action=mark-known], [data-action=unmark-known]");
+    if (knownBtn) knownBtn.addEventListener("click", function () {
+      setKnown(n.id, knownBtn.getAttribute("data-action") === "mark-known");
+      renderPanel(n, "learn");
     });
     // start-quiz button
     var startBtn = panelScroll.querySelector("[data-action=start-quiz]");
@@ -708,8 +729,9 @@
       card.className = "quiz-q";
       var qhtml = '<div class="q-num">Question ' + (qi + 1) + " of " + quiz.length + "</div>" +
                   '<div class="q-text">' + inline(item.q) + "</div>";
-      item.options.forEach(function (opt, oi) {
-        qhtml += '<button class="quiz-opt" data-q="' + qi + '" data-o="' + oi + '">' + inline(opt) + "</button>";
+      // shown in a fresh random order every attempt; data-o keeps the authored index
+      shuffled(item.options.map(function (_, oi) { return oi; })).forEach(function (oi) {
+        qhtml += '<button class="quiz-opt" data-q="' + qi + '" data-o="' + oi + '">' + inline(item.options[oi]) + "</button>";
       });
       qhtml += '<div class="quiz-explain"><strong>Why:</strong> ' + inline(item.explain || "") + "</div>";
       card.innerHTML = qhtml;
@@ -725,7 +747,7 @@
           if (oi === item.answer) { btn.classList.add("correct"); correctCount++; }
           else {
             btn.classList.add("wrong");
-            opts[item.answer].classList.add("correct");
+            card.querySelector('.quiz-opt[data-o="' + item.answer + '"]').classList.add("correct");
           }
           card.querySelector(".quiz-explain").classList.add("show");
           if (answered.every(function (a) { return a !== -1; })) finishQuiz(n, correctCount, quiz.length, mount);
@@ -740,7 +762,8 @@
     if (score > prevBest) { progress.best[n.id] = score; }
     if (passed && !progress.understood[n.id]) {
       progress.understood[n.id] = Date.now();
-      cy.getElementById(n.id).addClass("understood");
+      delete progress.known[n.id];   // quiz-verified now
+      cy.getElementById(n.id).removeClass("known").addClass("understood");
       updateProgressLine();
       if (pathState.active) highlightPath();
       setTimeout(maybeNudgeSave, 1200);
@@ -771,6 +794,22 @@
   }
 
   function passMark(total) { return Math.max(1, Math.ceil(total * 0.75)); }
+
+  function shuffled(arr) {
+    for (var i = arr.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1)), t = arr[i]; arr[i] = arr[j]; arr[j] = t;
+    }
+    return arr;
+  }
+
+  function setKnown(id, on) {
+    if (on) progress.known[id] = Date.now(); else delete progress.known[id];
+    refreshUnderstoodClasses();
+    updateProgressLine();
+    if (pathState.active) highlightPath();
+    saveProgress();
+    if (on) setTimeout(maybeNudgeSave, 800);
+  }
 
   // hex + alpha -> rgba
   function hexA(hex, a) {
@@ -845,7 +884,7 @@
   (ATLAS.paths || []).forEach(function (p) { curatedById[p.id] = p; });
 
   function firstUnmastered(seq) {
-    for (var i = 0; i < seq.length; i++) if (!isUnderstood(seq[i])) return seq[i];
+    for (var i = 0; i < seq.length; i++) if (!isDone(seq[i])) return seq[i];
     return null;
   }
 
@@ -1091,11 +1130,11 @@
     html += '<div class="path-goal-group"><h4>Paths by role</h4><div class="role-paths">';
     (ATLAS.paths || []).forEach(function (p) {
       var seq = computeSequence({ type: "curated", id: p.id });
-      var done = seq.filter(isUnderstood).length;
+      var done = seq.filter(isDone).length;
       html += '<button class="role-card" data-gtype="curated" data-gid="' + escapeHtml(p.id) + '">' +
         '<span class="rc-title">' + escapeHtml(p.label) + "</span>" +
         '<span class="rc-audience">' + escapeHtml(p.audience || "") + "</span>" +
-        '<span class="rc-meta">' + seq.length + " steps" + (done ? " · " + done + " already mastered" : "") + "</span>" +
+        '<span class="rc-meta">' + seq.length + " steps" + (done ? " · " + done + " already done" : "") + "</span>" +
         "</button>";
     });
     html += "</div></div>";
@@ -1187,7 +1226,9 @@
     panel.hidden = false; scrim.hidden = false;
     currentNodeId = "";
     var seq = pathState.sequence;
-    var done = seq.filter(isUnderstood).length;
+    var passed = seq.filter(isUnderstood).length;
+    var knownN = seq.filter(isKnown).length;
+    var done = passed + knownN;
     var next = firstUnmastered(seq);
     var pct = seq.length ? Math.round((done / seq.length) * 100) : 0;
 
@@ -1196,22 +1237,27 @@
     html += '<h2 class="p-title">' + escapeHtml(goalLabel()) + "</h2>";
     var cp = pathState.goal.type === "curated" && curatedById[pathState.goal.id];
     if (cp) html += '<p class="p-short">' + escapeHtml(cp.blurb || "") + "</p>";
-    html += '<div class="path-progress"><div class="path-progress-bar"><span style="width:' + pct + '%"></span></div>' +
-            '<div class="path-progress-label">' + done + " of " + seq.length + " concepts mastered · " + pct + "%</div></div>";
+    var passedPct = seq.length ? (passed / seq.length) * 100 : 0;
+    html += '<div class="path-progress"><div class="path-progress-bar">' +
+              '<span style="width:' + passedPct + '%"></span>' +
+              '<span class="known" style="width:' + (pct - passedPct) + '%"></span></div>' +
+            '<div class="path-progress-label">' + done + " of " + seq.length + " done · " + pct + "%" +
+              (knownN ? " — " + passed + " passed, " + knownN + " already known" : "") + "</div></div>";
 
     if (next) {
       html += '<button class="btn-primary" data-action="path-next" style="width:100%;margin-bottom:20px">' +
         (done ? "Continue → " : "Start → ") + escapeHtml(nodeById[next].label) + "</button>";
     } else {
-      html += '<div class="p-status learned" style="margin-bottom:20px">✓ Path complete — every concept mastered. Revisit any node to keep it fresh.</div>';
+      html += '<div class="p-status learned" style="margin-bottom:20px">✓ Path complete' +
+        (knownN ? " — " + knownN + " step" + (knownN === 1 ? " is" : "s are") + " marked known; take " + (knownN === 1 ? "its quiz" : "their quizzes") + " to confirm." : " — every concept mastered. Revisit any node to keep it fresh.") + "</div>";
     }
 
     html += '<ol class="path-list">';
     seq.forEach(function (id, i) {
       var n = nodeById[id];
-      var st = isUnderstood(id) ? "done" : (id === next ? "next" : "todo");
-      html += '<li class="path-item ' + st + '" data-id="' + id + '">' +
-        '<span class="pi-num">' + (st === "done" ? "✓" : (i + 1)) + "</span>" +
+      var st = isUnderstood(id) ? "done" : isKnown(id) ? "known" : (id === next ? "next" : "todo");
+      html += '<li class="path-item ' + st + '" data-id="' + id + '"' + (st === "known" ? ' title="Marked as already known"' : "") + ">" +
+        '<span class="pi-num">' + (st === "done" ? "✓" : st === "known" ? "◐" : (i + 1)) + "</span>" +
         clusterDot(n.cluster) +
         '<span class="pi-label">' + escapeHtml(n.label) + "</span></li>";
     });
@@ -1274,7 +1320,7 @@
     return Object.keys(progress.understood).filter(function (k) { return nodeById[k]; }).length;
   }
   function hasAnyProgress() {
-    return countUnderstood() > 0 || Object.keys(progress.best).length > 0 || !!progress.path;
+    return countUnderstood() > 0 || Object.keys(progress.known).length > 0 || Object.keys(progress.best).length > 0 || !!progress.path;
   }
 
   function progressPayload() {
@@ -1294,7 +1340,7 @@
   // Returns null if it isn't progress data.
   function mergeProgress(data, adoptPath) {
     var inc = (data && data.progress) ? data.progress : data;
-    if (!inc || (typeof inc.understood !== "object" && typeof inc.best !== "object")) return null;
+    if (!inc || (typeof inc.understood !== "object" && typeof inc.best !== "object" && typeof inc.known !== "object")) return null;
     var added = 0, skipped = 0;
     if (inc.understood && typeof inc.understood === "object") {
       Object.keys(inc.understood).forEach(function (id) {
@@ -1302,6 +1348,13 @@
         if (!progress.understood[id]) { progress.understood[id] = inc.understood[id] || Date.now(); added++; }
       });
     }
+    if (inc.known && typeof inc.known === "object") {
+      Object.keys(inc.known).forEach(function (id) {
+        if (nodeById[id] && !progress.understood[id] && !progress.known[id]) { progress.known[id] = inc.known[id] || Date.now(); added++; }
+      });
+    }
+    // understood wins over known
+    Object.keys(progress.understood).forEach(function (id) { delete progress.known[id]; });
     if (inc.best && typeof inc.best === "object") {
       Object.keys(inc.best).forEach(function (id) {
         if (!nodeById[id]) return;
@@ -1620,8 +1673,8 @@
 
   function resetProgress() {
     var where = isSyncing() ? "in this browser and in " + sync.name : "in this browser";
-    if (!confirm("Reset your progress?\n\nThis clears every concept you've marked understood, your quiz scores, and your saved path " + where + ". It can't be undone.")) return;
-    progress.understood = {}; progress.best = {}; delete progress.path;
+    if (!confirm("Reset your progress?\n\nThis clears every concept you've marked understood or known, your quiz scores, and your saved path " + where + ". It can't be undone.")) return;
+    progress.understood = {}; progress.known = {}; progress.best = {}; delete progress.path;
     saveProgress();
     if (pathState.active) exitPath();
     refreshUnderstoodClasses();

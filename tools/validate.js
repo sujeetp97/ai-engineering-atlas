@@ -31,6 +31,12 @@ const EDGE_TYPES = ["prereq", "partof", "enables", "uses", "related"];
 // and for future learning-path generation). "related" is undirected/ignored.
 const ORDERING_TYPES = ["prereq", "partof", "enables"];
 
+// `--quiz` lists every quiz question whose answer is given away by its length.
+const LIST_QUIZ_LEAKS = process.argv.includes("--quiz");
+// Correct option is the longest by this factor over the average distractor.
+const LEAK_RATIO = 1.5;
+const quizLeaks = [];   // { cluster, tag }
+
 const errors = [];
 const warnings = [];
 const err = (m) => errors.push(m);
@@ -88,6 +94,15 @@ for (const n of nodes) {
       if (!Array.isArray(item.options) || item.options.length < 2) err(`${tag} needs at least 2 options`);
       else if (typeof item.answer !== "number" || item.answer < 0 || item.answer >= item.options.length)
         err(`${tag} has an out-of-range answer index (${item.answer})`);
+      else {
+        // options are shuffled on screen, but a much longer correct option still gives it away
+        const lens = item.options.map((o) => String(o).length);
+        const others = lens.filter((_, k) => k !== item.answer);
+        const avg = others.reduce((a, b) => a + b, 0) / others.length;
+        if (lens[item.answer] > Math.max(...others) && lens[item.answer] >= LEAK_RATIO * avg) {
+          quizLeaks.push({ cluster: n.cluster, tag: `${tag}: "${String(item.q).slice(0, 60)}"` });
+        }
+      }
       if (!item.explain) warn(`${tag} has no explanation`);
     });
   }
@@ -192,6 +207,15 @@ if (nodes.length) {
     });
   });
 })();
+
+if (quizLeaks.length) {
+  const byCluster = {};
+  quizLeaks.forEach((l) => { byCluster[l.cluster] = (byCluster[l.cluster] || 0) + 1; });
+  warn(`${quizLeaks.length} quiz question(s) give the answer away by length — the correct option is ` +
+    `≥${LEAK_RATIO}× the average distractor (${Object.entries(byCluster).map(([k, v]) => `${k}:${v}`).join("  ")}). ` +
+    (LIST_QUIZ_LEAKS ? "Listed below." : "Run with --quiz to list them."));
+  if (LIST_QUIZ_LEAKS) quizLeaks.forEach((l) => warn(`  length giveaway — ${l.tag}`));
+}
 
 // ---- report ----
 const clusterCounts = {};
