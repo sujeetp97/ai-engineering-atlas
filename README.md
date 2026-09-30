@@ -24,8 +24,9 @@ python3 -m http.server 8000
 - **Take the tour** — a guided walkthrough runs automatically on your first visit; replay
   it anytime from the **?** button in the top bar.
 - **Explore** — drag the canvas, scroll to zoom, hover a node for a summary.
-- **Search** — type a concept (e.g. `attention`, `RAG`, `gradient descent`); matches
-  highlight in the graph and the dropdown jumps you to one.
+- **Search** — type a concept or anything you remember from a lesson (e.g. `attention`,
+  `cold start`, `feedback loops`). Names rank first; lesson-content hits show a snippet of
+  where the term appears. All matches highlight in the graph.
 - **Filter** — click a domain in the legend to hide/show it.
 - **Learn** — click a node → read the lesson → follow the connection chips to related ideas.
 - **Quiz** — take the quiz at the end of a lesson. Score ≥ 75% and the node is marked
@@ -59,7 +60,8 @@ python3 -m http.server 8000
 ```
 index.html            App shell + script load order
 css/styles.css        Theme (light "paper" + automatic dark mode)
-js/app.js             Graph engine, search, learn panel, quiz
+js/app.js             Graph engine, learn panel, quiz, paths
+js/search.js          Full-text search over names and lesson content
 data/_registry.js     Global registry every data file appends to
 data/00-clusters.js   The eight domains
 data/10..80-*.js      Nodes (concepts) per domain

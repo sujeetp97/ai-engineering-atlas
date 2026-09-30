@@ -306,31 +306,31 @@
   var searchEl = document.getElementById("search");
   var resultsEl = document.getElementById("search-results");
   var clearBtn = document.getElementById("search-clear");
-  var searchIndex = ATLAS.nodes.map(function (n) {
-    var hay = (n.label + " " + (n.short || "") + " " + (n.keywords || "")).toLowerCase();
-    return { id: n.id, label: n.label, cluster: n.cluster, hay: hay };
-  });
+  var searchIndex = AtlasSearch.create(ATLAS.nodes);
   var activeResult = -1;
 
   searchEl.addEventListener("input", function () {
-    var q = searchEl.value.trim().toLowerCase();
+    var q = searchEl.value.trim();
     clearBtn.style.display = q ? "block" : "none";
-    if (!q) { resultsEl.classList.remove("open"); liveHighlight(""); return; }
-    var matches = searchIndex.filter(function (r) { return r.hay.indexOf(q) !== -1; });
-    matches.sort(function (a, b) {
-      var ai = a.label.toLowerCase().indexOf(q), bi = b.label.toLowerCase().indexOf(q);
-      if ((ai === 0) !== (bi === 0)) return ai === 0 ? -1 : 1;
-      return a.label.length - b.label.length;
-    });
-    renderResults(matches.slice(0, 12), q);
-    liveHighlight(q);
+    if (!q) { resultsEl.classList.remove("open"); liveHighlight([]); return; }
+    var matches = searchIndex.search(q);
+    renderResults(matches.slice(0, 12), q, matches.length);
+    liveHighlight(matches.map(function (m) { return m.id; }));
   });
 
-  function liveHighlight(q) {
+  // Escape `text` and wrap every query-term match in <mark>.
+  function markMatches(text, q) {
+    var html = "", at = 0;
+    AtlasSearch.matchRanges(text, q).forEach(function (r) {
+      html += escapeHtml(text.slice(at, r[0])) + "<mark>" + escapeHtml(text.slice(r[0], r[1])) + "</mark>";
+      at = r[1];
+    });
+    return html + escapeHtml(text.slice(at));
+  }
+
+  function liveHighlight(ids) {
     cy.nodes().removeClass("match");
-    if (!q) { if (!cy.getElementById(currentNodeId).nonempty()) clearHighlight(); return; }
-    var ids = searchIndex.filter(function (r) { return r.hay.indexOf(q) !== -1; }).map(function (r) { return r.id; });
-    if (!ids.length) return;
+    if (!ids.length) { if (!cy.getElementById(currentNodeId).nonempty()) clearHighlight(); return; }
     var set = cy.collection();
     ids.forEach(function (id) { set = set.union(cy.getElementById(id)); });
     cy.elements().addClass("dim").removeClass("faded");
@@ -338,21 +338,27 @@
     set.connectedEdges().removeClass("dim");
   }
 
-  function renderResults(matches, q) {
+  var FIELD_LABEL = { short: "summary", heading: "section", keyPoints: "key point", why: "why it matters", body: "lesson", quiz: "quiz" };
+
+  function renderResults(matches, q, total) {
     activeResult = -1;
     if (!matches.length) {
-      resultsEl.innerHTML = '<li class="r-empty">No concept matches “' + escapeHtml(q) + "”.</li>";
+      resultsEl.innerHTML = '<li class="r-empty">Nothing in the atlas mentions “' + escapeHtml(q) + "”.</li>";
       resultsEl.classList.add("open");
       return;
     }
     resultsEl.innerHTML = matches.map(function (m) {
       var c = CL[m.cluster];
       return '<li data-id="' + m.id + '">' +
-        '<span class="dot" style="background:' + (c ? c.color : "#888") + '"></span>' +
-        '<span class="r-label">' + escapeHtml(m.label) + "</span>" +
-        '<span class="r-cluster">' + (c ? c.label : "") + "</span>" +
+        '<div class="r-row">' +
+          '<span class="dot" style="background:' + (c ? c.color : "#888") + '"></span>' +
+          '<span class="r-label">' + markMatches(m.label, q) + "</span>" +
+          '<span class="r-cluster">' + (c ? c.label : "") + "</span>" +
+        "</div>" +
+        (m.snippet ? '<div class="r-snippet"><span class="r-field">' + FIELD_LABEL[m.field] + "</span>" + markMatches(m.snippet, q) + "</div>" : "") +
         "</li>";
-    }).join("");
+    }).join("") +
+      (total > matches.length ? '<li class="r-more">+ ' + (total - matches.length) + " more highlighted on the graph</li>" : "");
     resultsEl.classList.add("open");
     resultsEl.querySelectorAll("li[data-id]").forEach(function (li) {
       li.addEventListener("mousedown", function (e) {
@@ -383,7 +389,7 @@
   }
   clearBtn.addEventListener("click", function () {
     searchEl.value = ""; clearBtn.style.display = "none";
-    resultsEl.classList.remove("open"); liveHighlight(""); clearHighlight(); searchEl.focus();
+    resultsEl.classList.remove("open"); liveHighlight([]); clearHighlight(); searchEl.focus();
   });
   document.addEventListener("click", function (e) {
     if (!e.target.closest(".search-wrap")) resultsEl.classList.remove("open");

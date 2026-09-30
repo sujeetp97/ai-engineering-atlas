@@ -22,7 +22,7 @@ the quality bar, and the recipes. This file is the short version.
    mechanism plainly, cites **one real, high-trust primary source** (never invent a URL),
    is honest about limitations. Quizzes test understanding with plausible distractors and
    options of similar length (don't leak the answer via formatting). See the `teach` skill.
-5. **After any change to `data/*.js`, `js/app.js`, or `css/styles.css`, bump its `?v=`
+5. **After any change to `data/*.js`, `js/*.js`, or `css/styles.css`, bump its `?v=`
    number in `index.html`** — otherwise the browser serves a stale cached copy.
 6. Keep node `id`s stable; renaming one means updating every edge that references it.
 
@@ -47,7 +47,9 @@ python3 -m http.server 8000     # then open http://localhost:8000
 Fix every validator **error** (warnings are advisory). Only then commit.
 
 ## Commit conventions
-- Work on a branch off `main` unless told otherwise; don't push without being asked.
+- Branch model: `main` is what's deployed; `develop` is the integration branch. Do work on
+  `feature/<issue#>-<slug>` branches cut from `develop` and open PRs back into `develop`.
+  Every piece of work should trace to a GitHub issue. Don't push without being asked.
 - Conventional, descriptive messages (e.g. `Add RAG evaluation concepts to AI Engineering`).
 - End commit messages with the attribution line the session specifies.
 
