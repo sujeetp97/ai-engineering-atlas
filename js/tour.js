@@ -26,7 +26,7 @@
       target: ".search-wrap",
       side: "below",
       title: "Search anything",
-      body: "Type a concept — like “attention” or “RAG”. Matches light up across the graph and you can jump straight to one from the dropdown.",
+      body: "Type a concept or anything you remember from a lesson — like “attention” or “cold start”. Matches light up across the graph and you can jump straight to one from the dropdown. With a learning path on, search sticks to your path.",
     },
     {
       panel: true, openNode: SAMPLE_NODE,
