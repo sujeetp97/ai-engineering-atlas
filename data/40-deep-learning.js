@@ -35,9 +35,9 @@ ATLAS.addNodes([
       source: { title: "3Blue1Brown — Neural Networks series", url: "https://www.3blue1brown.com/topics/neural-networks", note: "The best visual introduction to how neural nets work." },
     },
     quiz: [
-      { q: "What does 'deep' in deep learning refer to?", options: ["The size of the hard drive", "The number of layers stacked in the network", "How long training takes", "The depth of the dataset folder"], answer: 1, explain: "'Deep' means many layers, each transforming the previous layer's output." },
-      { q: "The defining advantage of deep learning over classic ML is…", options: ["It needs no data", "It learns feature representations automatically from raw data", "It always uses fewer parameters", "It avoids matrix multiplication"], answer: 1, explain: "Representation learning removes the need for manual feature engineering on perceptual and language data." },
-      { q: "In a vision network, what do early layers typically learn compared to later layers?", options: ["Whole objects first, then edges", "Simple features like edges first, then complex parts and objects", "Only colors, never shapes", "Nothing until the last layer"], answer: 1, explain: "Features grow hierarchically: edges → textures/parts → whole objects." },
+      { q: "In an image network, what do early and later layers typically learn?", options: ["Early: whole objects; later: individual pixels", "Early: edges and textures; later: parts and objects", "All layers learn the same features at every depth", "Early: colors only; later: the image's file format"], answer: 1, explain: "Each layer builds on the last, forming a hierarchy from edges, to textures and parts, to whole objects, all learned automatically." },
+      { q: "Why did deep learning overtake classic ML on images and speech?", options: ["It needs far less training data than classic ML", "It runs faster than classic ML on a CPU", "It makes every prediction easy to explain", "It learns useful features from raw data itself"], answer: 3, explain: "Representation learning discovers features directly from pixels, audio or text instead of relying on hand-engineered ones, and it scales with data and compute." },
+      { q: "Which combination made deep learning practical around 2012?", options: ["Smaller models, less data, and faster CPUs", "Hand-built features, rules, and expert systems", "Big datasets, GPU compute, and better algorithms", "Quantum chips, symbolic logic, and search trees"], answer: 2, explain: "Large labeled datasets, GPUs cutting training from months to days, and algorithmic advances like ReLU and normalization came together, marked by AlexNet in 2012." },
     ],
   },
 
@@ -69,9 +69,9 @@ ATLAS.addNodes([
       source: { title: "Michael Nielsen — Neural Networks and Deep Learning (free book)", url: "http://neuralnetworksanddeeplearning.com/", note: "A superb, intuitive online textbook." },
     },
     quiz: [
-      { q: "A single artificial neuron computes…", options: ["A database join", "A weighted sum of inputs plus bias, passed through an activation function", "A random number", "A sort operation"], answer: 1, explain: "Each neuron is a weighted sum with bias followed by a non-linear activation." },
-      { q: "The universal approximation theorem says a sufficiently large network can…", options: ["Train instantly", "Approximate essentially any continuous function", "Run without data", "Only fit straight lines"], answer: 1, explain: "Enough hidden units can represent almost any continuous function — existence, not easy discovery." },
-      { q: "A plain stack of fully-connected layers is called…", options: ["A convolutional network", "A multilayer perceptron (MLP)", "A decision tree", "A recurrent network"], answer: 1, explain: "Stacked dense layers form an MLP, a core component still used inside transformers." },
+      { q: "What does a single artificial neuron compute?", options: ["A lookup of the input in a table of stored values", "The plain average of its inputs, with no weights", "A weighted sum plus bias, then a non-linearity", "A random number that breaks symmetry in training"], answer: 2, explain: "A neuron is a generalized regression unit: a weighted sum of its inputs, plus a bias, passed through a non-linear activation." },
+      { q: "The universal approximation theorem says a big enough network can represent almost any function. What's the catch?", options: ["It only holds for networks with a single neuron", "It doesn't mean training will actually find it", "It only applies to linear functions of the inputs", "It requires the network to have no hidden layers"], answer: 1, explain: "The theorem says such a network exists, not that optimization will find it. Architecture, data and training all still matter." },
+      { q: "Where do plain multilayer perceptrons (MLPs) still show up in modern models?", options: ["Only in outdated models from before the year 2000", "As the tokenizer that splits text into tokens", "As the database that stores retrieved documents", "As the feed-forward part of each transformer block"], answer: 3, explain: "Each transformer block pairs self-attention with a position-wise feed-forward MLP, so the humble MLP is still everywhere." },
     ],
   },
 
@@ -106,9 +106,9 @@ ATLAS.addNodes([
       source: { title: "Glorot et al. — Deep Sparse Rectifier Networks (ReLU)", url: "https://proceedings.mlr.press/v15/glorot11a.html", note: "The paper that popularized ReLU." },
     },
     quiz: [
-      { q: "Without any activation functions, a deep network is equivalent to…", options: ["A single linear transformation", "A convolutional network", "A decision tree", "A perfect classifier"], answer: 0, explain: "Composed linear layers collapse to one linear map; non-linear activations are what add power." },
-      { q: "ReLU is defined as…", options: ["1/(1+e^-x)", "max(0, x)", "x squared", "the average of inputs"], answer: 1, explain: "ReLU outputs the input if positive, else zero: max(0, x)." },
-      { q: "A key reason ReLU helped deep networks train is that it…", options: ["Saturates like sigmoid", "Keeps a strong gradient for positive inputs, avoiding vanishing gradients", "Removes all non-linearity", "Requires no computation"], answer: 1, explain: "ReLU doesn't saturate for positive inputs, so gradients flow well through deep stacks." },
+      { q: "You remove every activation function from a 50-layer network. What happens?", options: ["It becomes 50 times more expressive than before", "It trains faster with no change in what it can learn", "It collapses into the equivalent of one linear layer", "It turns into a decision tree with 50 levels"], answer: 2, explain: "Stacked linear layers compose into a single linear map. Non-linear activations between them are what let depth add expressive power." },
+      { q: "Why did ReLU largely replace sigmoid in deep networks?", options: ["It doesn't saturate for positive inputs, so gradients flow", "It outputs probabilities between 0 and 1 for each unit", "It is smooth everywhere, unlike sigmoid", "It makes every neuron output a negative value"], answer: 0, explain: "Sigmoid and tanh flatten out for large inputs, so gradients vanish in deep stacks. ReLU keeps a gradient of 1 for positive inputs." },
+      { q: "Which activations do modern transformers often use?", options: ["Step functions that output only 0 or 1", "Smooth ReLU-like curves such as GELU or SiLU", "Sigmoid in every layer for stable outputs", "No activation, since attention is enough"], answer: 1, explain: "GELU and SiLU are smooth variants of ReLU that tend to perform slightly better in transformers." },
     ],
   },
 
@@ -139,9 +139,9 @@ ATLAS.addNodes([
       source: { title: "Karpathy — The spelled-out intro to backpropagation (micrograd)", url: "https://www.youtube.com/watch?v=VMj-3S1tku0", note: "Builds a working autodiff engine from scratch." },
     },
     quiz: [
-      { q: "Backpropagation computes the gradient of the loss with respect to…", options: ["Only the last layer's weights", "Every parameter in the network, efficiently in one backward pass", "The input data labels", "Nothing — it's random"], answer: 1, explain: "Backprop yields gradients for all parameters at once via the chain rule." },
-      { q: "The forward pass must cache layer outputs because…", options: ["They are printed to the user", "The backward pass needs them to compute local derivatives", "It saves disk space", "They are the final prediction"], answer: 1, explain: "Cached activations from the forward pass are reused when applying the chain rule backward." },
-      { q: "Automatic differentiation in frameworks like PyTorch means…", options: ["You must derive gradients by hand", "Gradients are derived mechanically from the recorded forward operations", "There is no gradient", "Training needs no loss"], answer: 1, explain: "Autodiff records the computation graph and applies the chain rule automatically, so you only write the forward pass." },
+      { q: "Why is backpropagation essential for training networks with billions of weights?", options: ["It avoids needing gradients to train the network", "It randomly guesses weights until the loss drops", "It trains each weight separately, one at a time", "It gets every weight's gradient in one backward pass"], answer: 3, explain: "Computing each gradient separately would be hopeless at that scale. Backprop applies the chain rule backward once, reusing cached forward-pass values." },
+      { q: "What does the forward pass store that the backward pass reuses?", options: ["A copy of the entire training set", "Each layer's intermediate outputs", "The final answer for every input", "A list of the model's hyperparameters"], answer: 1, explain: "The forward pass caches each layer's outputs; the backward pass multiplies local derivatives using those values to get every gradient." },
+      { q: "In PyTorch you only write the forward computation. How do you get the gradients?", options: ["You derive and code each gradient formula by hand", "The framework estimates them with random sampling", "Autodiff records the ops and applies the chain rule", "Gradients aren't needed when using a framework"], answer: 2, explain: "Automatic differentiation records every operation as a graph during the forward pass and mechanically applies the chain rule backward." },
     ],
   },
 
@@ -176,9 +176,9 @@ ATLAS.addNodes([
       source: { title: "Google — Descending into ML: Loss", url: "https://developers.google.com/machine-learning/crash-course/descending-into-ml/training-and-loss", note: "How loss drives training." },
     },
     quiz: [
-      { q: "During training, the loss function is…", options: ["Maximized", "Minimized", "Kept constant", "Ignored"], answer: 1, explain: "Training reduces the loss, moving parameters to make predictions closer to targets." },
-      { q: "Which loss is standard for classification and language models?", options: ["Mean squared error", "Cross-entropy", "Mean absolute error", "Hinge-free error"], answer: 1, explain: "Cross-entropy matches probabilistic outputs and penalizes confident mistakes — used for classifiers and LLMs." },
-      { q: "Choosing the loss function matters because…", options: ["It only affects speed", "The model optimizes exactly what the loss encodes, including unintended loopholes", "It has no effect on behavior", "It replaces the data"], answer: 1, explain: "The loss defines the objective; the model will exploit whatever you actually specify." },
+      { q: "You're predicting house prices, and a few extreme outlier listings shouldn't dominate training. Which loss fits better?", options: ["Mean squared error (MSE)", "Mean absolute error (MAE)", "Cross-entropy loss (CE)", "Hinge loss (SVM-style)"], answer: 1, explain: "MSE squares errors, so outliers dominate. MAE penalizes errors linearly and is more robust to them. Cross-entropy is for classification." },
+      { q: "Which loss trains essentially every LLM?", options: ["Mean squared error on the output text length", "Mean absolute error on word counts", "Hinge loss on sentence classifications", "Cross-entropy on next-token prediction"], answer: 3, explain: "Cross-entropy compares the predicted probability distribution with the actual next token, penalizing confident wrong predictions." },
+      { q: "A fraud model trained to minimize overall error learns to predict 'not fraud' for everything. What's the loss-level fix?", options: ["Remove the fraud examples from the training data", "Weight the rare fraud class more heavily in the loss", "Train for more epochs with the same loss", "Switch the loss to mean squared error"], answer: 1, explain: "The loss encodes your goal. If the rare class matters, weight it so mistakes on it cost more; otherwise the model optimizes exactly what you asked, loopholes included." },
     ],
   },
 
@@ -213,9 +213,9 @@ ATLAS.addNodes([
       source: { title: "Kingma & Ba — Adam optimizer", url: "https://arxiv.org/abs/1412.6980", note: "The paper introducing Adam." },
     },
     quiz: [
-      { q: "What is the role of an optimizer, given the gradients from backprop?", options: ["To compute the gradients", "To decide how to update the parameters using those gradients", "To label the data", "To draw the loss curve"], answer: 1, explain: "Backprop provides gradients; the optimizer turns them into actual weight updates." },
-      { q: "Momentum helps optimization by…", options: ["Randomizing the gradient", "Accumulating a running average of gradients to move through noise and small bumps", "Removing the learning rate", "Deleting parameters"], answer: 1, explain: "Momentum smooths the trajectory, like a ball gaining speed downhill, improving stability and speed." },
-      { q: "A typical learning-rate schedule for training large models involves…", options: ["A constant rate forever", "A warmup followed by a decay", "Only increasing the rate", "No schedule at all"], answer: 1, explain: "Warmup avoids early instability; decay shrinks steps as the model converges." },
+      { q: "Adam differs from plain SGD mainly because it…", options: ["Doesn't need gradients to update the weights", "Always converges to the global minimum", "Adapts each parameter's step and uses momentum", "Uses a single fixed step size for all weights"], answer: 2, explain: "Adam keeps running estimates of each parameter's gradient mean and variance, combining momentum with per-parameter adaptive steps." },
+      { q: "Training loss spikes and diverges in the first few hundred steps. Which schedule change is standard?", options: ["Raise the learning rate for the early steps", "Add a learning-rate warmup at the start", "Remove momentum from the optimizer", "Double the batch size every step"], answer: 1, explain: "A brief warmup ramps the learning rate up to avoid early instability; then a decay shrinks steps as training nears a good solution." },
+      { q: "What does momentum add to gradient descent?", options: ["A random jump to escape every local minimum", "A separate learning rate for every data point", "A check that stops training when loss rises", "A running average of gradients that smooths noise"], answer: 3, explain: "Like a ball rolling downhill, momentum accumulates past gradients so updates push through noise and small bumps." },
     ],
   },
 
@@ -250,9 +250,9 @@ ATLAS.addNodes([
       source: { title: "Srivastava et al. — Dropout", url: "https://jmlr.org/papers/v15/srivastava14a.html", note: "The original dropout paper." },
     },
     quiz: [
-      { q: "Dropout reduces overfitting by…", options: ["Adding more layers", "Randomly zeroing neurons during training so the net can't rely on any single one", "Increasing the learning rate", "Removing the loss function"], answer: 1, explain: "Randomly dropping neurons forces redundant, robust representations, regularizing the network." },
-      { q: "Normalization layers primarily help by…", options: ["Labeling the data", "Keeping activation scales controlled, stabilizing and speeding training", "Deleting parameters", "Replacing the optimizer"], answer: 1, explain: "Normalizing activations tames training dynamics, allowing deeper nets and higher learning rates." },
-      { q: "Which normalization is standard in transformers?", options: ["Batch normalization", "Layer normalization", "No normalization", "Label normalization"], answer: 1, explain: "Transformers use layer norm, which normalizes within each example and doesn't depend on batch statistics." },
+      { q: "Your network does great on training data but poorly on validation data. Which technique targets this directly?", options: ["Removing the validation set so training is faster", "Dropout, which forces redundant, robust features", "Raising the learning rate by a factor of ten", "Adding more layers without any other change"], answer: 1, explain: "That's overfitting. Dropout randomly zeroes neurons during training so the network can't lean on any single one, which improves generalization." },
+      { q: "Why do transformers use layer normalization rather than batch normalization?", options: ["It is the only normalization that works on GPUs", "It removes the need for any residual connections", "It makes attention scale linearly with length", "It normalizes per example, not across a batch"], answer: 3, explain: "Layer norm normalizes across features within one example, so it doesn't depend on batch statistics, which suits sequence models." },
+      { q: "What happens to dropout at inference time?", options: ["It stays on, so outputs are randomly different", "It doubles, to make predictions more robust", "It's turned off, with activations scaled to match", "It's replaced by batch normalization"], answer: 2, explain: "Dropout is a training-time regularizer. At inference it's disabled, and activations are scaled so their expected size matches training." },
     ],
   },
 
@@ -288,9 +288,9 @@ ATLAS.addNodes([
       source: { title: "Stanford CS231n — Convolutional Neural Networks", url: "https://cs231n.github.io/convolutional-networks/", note: "The definitive course notes on CNNs." },
     },
     quiz: [
-      { q: "The key idea of a convolutional layer is to…", options: ["Connect every pixel to every neuron", "Slide small shared filters across the image, applying the same operation everywhere", "Sort the pixels", "Use no weights"], answer: 1, explain: "Shared local filters encode locality and translation invariance with far fewer parameters." },
-      { q: "Weight sharing in CNNs provides which benefit?", options: ["More parameters", "Detecting a feature anywhere in the image with far fewer parameters", "Slower training", "No effect"], answer: 1, explain: "The same filter reused across positions means fewer weights and position-independent feature detection." },
-      { q: "Pooling layers in a CNN mainly…", options: ["Add color", "Downsample feature maps, adding position-invariance and reducing size", "Increase the resolution", "Compute the loss"], answer: 1, explain: "Pooling reduces spatial dimensions and grants a bit more invariance to exact position." },
+      { q: "Why does a CNN need far fewer parameters than a fully connected network on images?", options: ["It only looks at the pixels in the image's center", "It converts each image to text before processing", "It stores every image at a much lower resolution", "The same small filters are reused across the image"], answer: 3, explain: "Weight sharing: one small filter slides over every location, so the parameter count doesn't grow with image size, and a feature is detected anywhere." },
+      { q: "A cat detector should work whether the cat is in the corner or the center. Which CNN property helps?", options: ["Pooling layers memorize each cat's position", "Shared filters give translation invariance", "Fully connected layers weight every pixel equally", "Larger images always improve position accuracy"], answer: 1, explain: "Applying the same filter at every location means a pattern is recognized wherever it appears; pooling adds a little more position invariance." },
+      { q: "What has recently rivaled CNNs on large-scale vision tasks?", options: ["Recurrent networks", "Decision trees", "Vision transformers", "k-means clustering"], answer: 2, explain: "CNNs launched modern computer vision and still dominate many tasks, but vision transformers now compete or win at large scale." },
     ],
   },
 
@@ -325,9 +325,9 @@ ATLAS.addNodes([
       source: { title: "Chris Olah — Understanding LSTMs", url: "https://colah.github.io/posts/2015-08-Understanding-LSTMs/", note: "The classic visual explanation of LSTM gates." },
     },
     quiz: [
-      { q: "How does an RNN carry information across a sequence?", options: ["It processes all positions at once", "Through a hidden state updated at each step, acting as memory", "By storing the whole sequence in a database", "It doesn't — each step is independent"], answer: 1, explain: "The recurrent hidden state passes information forward from step to step." },
-      { q: "LSTMs and GRUs were designed to solve…", options: ["Slow GPUs", "The vanishing-gradient problem, so networks can remember long-range context", "Overfitting only", "Image classification"], answer: 1, explain: "Gating mechanisms let LSTMs/GRUs preserve information over long sequences, mitigating vanishing gradients." },
-      { q: "A major reason transformers replaced RNNs for language is that RNNs…", options: ["Use too little memory", "Are inherently sequential and can't parallelize across a sequence", "Cannot use gradients", "Only work on images"], answer: 1, explain: "RNNs must process steps in order, preventing the parallelism transformers exploit." },
+      { q: "Why are RNNs slow to train on long sequences with modern GPUs?", options: ["They use far more parameters than transformers do", "They can only process sequences of numbers, not text", "Each step depends on the previous one, so no parallelism", "They need a separate model for every sequence length"], answer: 2, explain: "Recurrence is inherently sequential: step t needs step t−1. Transformers process all positions in parallel, which suits GPUs." },
+      { q: "What problem do LSTM gates fix?", options: ["Losing long-range context to vanishing gradients", "Running out of memory on very short sequences", "Needing labeled data for every time step", "Being unable to process more than one input"], answer: 0, explain: "Gates explicitly decide what to keep, forget and output, so information and gradients can persist across long sequences." },
+      { q: "What carries information forward from one step to the next in an RNN?", options: ["The loss function", "The learning rate", "The attention weights", "The hidden state"], answer: 3, explain: "The hidden state is the RNN's memory: each step combines the current input with it and passes an updated state on." },
     ],
   },
 
@@ -364,9 +364,9 @@ ATLAS.addNodes([
       source: { title: "Jay Alammar — The Illustrated Word2vec", url: "https://jalammar.github.io/illustrated-word2vec/", note: "A visual, intuitive introduction to embeddings." },
     },
     quiz: [
-      { q: "An embedding represents an item as…", options: ["A single integer id", "A dense vector positioned so similar items are close together", "A row in a spreadsheet", "A decision tree"], answer: 1, explain: "Embeddings map items to vectors where geometric closeness reflects semantic similarity." },
-      { q: "The fact that `king − man + woman ≈ queen` works shows that embeddings…", options: ["Are random", "Capture relationships as consistent directions in the vector space", "Store exact dictionary definitions", "Cannot do arithmetic"], answer: 1, explain: "Semantic relationships (like gender or royalty) become directions, enabling vector arithmetic." },
-      { q: "In RAG, embeddings are used to…", options: ["Compile code", "Retrieve documents whose vectors are nearest to the query's vector", "Train the GPU", "Label images"], answer: 1, explain: "The query and documents are embedded and compared by nearest-neighbor similarity for retrieval." },
+      { q: "Your search matches 'car' but misses documents that only say 'automobile'. What fixes that?", options: ["Adding every synonym to each document by hand", "Searching by embedding similarity, not keywords", "Lowercasing all the text before searching", "Sorting the results by document length"], answer: 1, explain: "Embeddings place similar meanings close together, so 'car' and 'automobile' land near each other even though the strings differ." },
+      { q: "Why does 'bank' get different vectors in 'river bank' and 'bank loan' in a modern model?", options: ["The tokenizer splits 'bank' differently each time", "Embeddings are randomly re-sampled on every call", "The model stores one vector per sentence it has seen", "Contextual embeddings depend on the surrounding words"], answer: 3, explain: "Transformers produce contextual embeddings: a word's vector reflects its sentence. Older word2vec-style embeddings gave one vector per word." },
+      { q: "What does `king − man + woman ≈ queen` show about embedding spaces?", options: ["Relationships like gender appear as directions", "Embeddings store a dictionary of word meanings", "Every word is exactly one unit from its neighbors", "Vector math only works for royalty-related words"], answer: 0, explain: "Meaning becomes geometry: concepts like royalty and gender show up as consistent directions, so vector arithmetic can capture analogies." },
     ],
   },
 
@@ -403,9 +403,9 @@ ATLAS.addNodes([
       source: { title: "Jay Alammar — The Illustrated Transformer", url: "https://jalammar.github.io/illustrated-transformer/", note: "The clearest visual explanation of attention." },
     },
     quiz: [
-      { q: "The attention mechanism lets a model…", options: ["Ignore all context", "Dynamically focus on the most relevant other positions when processing each token", "Only look at the previous single word", "Sort the vocabulary"], answer: 1, explain: "Attention weights how much each position should draw from every other position, by relevance." },
-      { q: "In attention, the relevance between two tokens is computed from…", options: ["Their colors", "The dot product of one token's query with another's key", "The learning rate", "Random noise"], answer: 1, explain: "Query·Key dot products (scaled and softmaxed) produce the attention weights over values." },
-      { q: "Compared to RNNs, attention is advantageous because it is…", options: ["Sequential and slow", "Parallelizable and directly models long-range dependencies", "Unable to use GPUs", "Limited to short inputs"], answer: 1, explain: "Attention computes all positions at once and links distant tokens directly — unlike sequential RNNs." },
+      { q: "In 'The animal didn't cross the street because it was tired', how does attention help the model with 'it'?", options: ["It reads the sentence strictly left to right, word by word", "'it' weighs 'animal' highly when building its representation", "It looks up 'it' in a dictionary of pronouns", "It skips pronouns since they carry no meaning"], answer: 1, explain: "For each position, attention pulls in information from the most relevant other positions, at any distance, so 'it' can draw on 'animal'." },
+      { q: "In attention, what are a token's query and key used for?", options: ["The query stores the token's meaning; keys are unused", "They pick which tokens are deleted from the input", "Their dot products decide how much each value counts", "They set the model's learning rate for that token"], answer: 2, explain: "Each query is compared with every key; the softmaxed scores become weights that blend the values into the new representation." },
+      { q: "Why does multi-head attention use several heads instead of one?", options: ["More heads let the model read longer documents", "Heads split the vocabulary so each learns fewer words", "Multiple heads remove the need for positional encodings", "Each head can capture a different kind of relationship"], answer: 3, explain: "Parallel attention heads let the model track several kinds of relationship at once, such as syntax in one head and coreference in another." },
     ],
   },
 
@@ -440,9 +440,9 @@ ATLAS.addNodes([
       source: { title: "Vaswani et al. — Attention Is All You Need", url: "https://arxiv.org/abs/1706.03762", note: "The 2017 paper that introduced the transformer." },
     },
     quiz: [
-      { q: "A transformer block combines self-attention with…", options: ["A convolutional filter", "A position-wise feed-forward MLP, plus residuals and layer norm", "A decision tree", "A recurrent loop"], answer: 1, explain: "Each block interleaves attention and an MLP, with residual connections and layer normalization." },
-      { q: "Generative LLMs like GPT and Claude are based on which transformer variant?", options: ["Encoder-only", "Decoder-only (next-token prediction)", "Convolutional", "Recurrent"], answer: 1, explain: "Decoder-only transformers predict the next token autoregressively — the generative LLM design." },
-      { q: "Because attention has no built-in sense of order, transformers add…", options: ["Dropout", "Positional encodings", "More GPUs", "Extra labels"], answer: 1, explain: "Positional encodings tell the model where each token is in the sequence." },
+      { q: "Why does a transformer need positional encodings?", options: ["They let it read more than one language", "They compress the text to save memory", "Attention alone has no sense of word order", "They replace the feed-forward layers"], answer: 2, explain: "Self-attention treats the input as an unordered set; positional encodings inject where each token sits, so order can matter." },
+      { q: "You need a model that reads a whole review at once to classify its sentiment, not generate text. Which is the classic fit?", options: ["Decoder-only, like GPT", "Encoder-only, like BERT", "A recurrent LSTM", "A diffusion model"], answer: 1, explain: "Encoder-only models read bidirectionally and suit understanding and classification. Decoder-only models generate text left to right." },
+      { q: "What's the main scaling bottleneck of the standard transformer?", options: ["It can't be parallelized across positions on GPUs", "It stops improving once data passes a set size", "Its parameters can't be split across several GPUs", "Attention cost grows with sequence length squared"], answer: 3, explain: "Transformers parallelize and scale predictably with data and parameters, but attention's cost rises quadratically with context length." },
     ],
   },
 
@@ -477,9 +477,9 @@ ATLAS.addNodes([
       source: { title: "Sebastian Ruder — Transfer Learning in NLP", url: "https://ruder.io/transfer-learning/", note: "A thorough overview of the paradigm." },
     },
     quiz: [
-      { q: "Transfer learning means…", options: ["Training every model from scratch", "Reusing a model pretrained on a large task as a starting point for a new task", "Copying data between hard drives", "Deleting a model's weights"], answer: 1, explain: "It leverages representations learned on a big general task to accelerate a new, related task." },
-      { q: "Fine-tuning differs from feature extraction in that fine-tuning…", options: ["Freezes the entire model", "Continues training the pretrained weights (often at a low learning rate)", "Uses no data", "Removes the pretrained model"], answer: 1, explain: "Fine-tuning updates the pretrained weights on new data; feature extraction freezes them and trains only a new head." },
-      { q: "The foundation-model paradigm is essentially transfer learning that…", options: ["Avoids pretraining", "Pretrains once at massive scale, then adapts to many downstream tasks", "Only works on tabular data", "Requires labeling the whole internet"], answer: 1, explain: "Pretrain once on internet-scale data, then adapt via fine-tuning, prompting, or RAG — transfer learning at scale." },
+      { q: "You have 800 labeled photos of machine defects. What's the most practical way to build a good classifier?", options: ["Train a large CNN from scratch on the 800 photos", "Fine-tune a pretrained vision model on them", "Collect a million photos before trying anything", "Use k-means to cluster the photos into classes"], answer: 1, explain: "Transfer learning reuses features learned on a huge dataset, giving a small task a big head start with far less data and compute." },
+      { q: "With very little data and compute, which transfer approach is usually safest?", options: ["Retrain every layer with a high learning rate", "Randomly re-initialize the pretrained weights", "Pretrain a new base model from scratch", "Freeze the base and train a small new head"], answer: 3, explain: "Feature extraction keeps the pretrained features fixed and learns only a small task head, which is cheap and less prone to overfitting a small dataset." },
+      { q: "How do prompting and RAG relate to transfer learning in the LLM world?", options: ["They are ways of pretraining a model from scratch", "They replace the need for a pretrained model", "They adapt a general model to a task without training", "They only work on models trained for one task"], answer: 2, explain: "They're even lighter-weight ways to 'transfer' a general model's knowledge to your task, with no training at all." },
     ],
   },
 
@@ -515,9 +515,9 @@ ATLAS.addNodes([
       source: { title: "Lilian Weng — What are Diffusion Models?", url: "https://lilianweng.github.io/posts/2021-07-11-diffusion-models/", note: "A rigorous but readable guide to diffusion." },
     },
     quiz: [
-      { q: "A generative model differs from a discriminative one because it…", options: ["Only classifies inputs", "Learns the data distribution and can produce new samples", "Cannot use neural networks", "Needs no training data"], answer: 1, explain: "Generative models learn P(data) to synthesize new examples, not just separate classes." },
-      { q: "Modern image generators like Stable Diffusion are based on…", options: ["Decision trees", "Diffusion models that iteratively denoise from random noise", "k-means", "Linear regression"], answer: 1, explain: "Diffusion models learn to reverse a noising process, denoising random noise into an image." },
-      { q: "LLMs generate text using which generative approach?", options: ["GANs", "Autoregressive, one token at a time", "Diffusion over words only", "k-nearest neighbors"], answer: 1, explain: "LLMs are autoregressive: they generate each next token conditioned on the previous ones." },
+      { q: "What's the key difference between a generative and a discriminative model?", options: ["Generative models are always larger than discriminative ones", "Generative learns the data itself, so it can make new samples", "Discriminative models can only handle image inputs", "Generative models need no training data to work"], answer: 1, explain: "A discriminative model learns P(label | data) to tell classes apart; a generative model learns P(data) and can sample new examples." },
+      { q: "Modern image generators like Stable Diffusion produce images by…", options: ["Copying and blending images from their training set", "Predicting one full image in a single forward pass", "Searching the web for the closest matching image", "Starting from noise and denoising it step by step"], answer: 3, explain: "Diffusion models learn to reverse a gradual noising process, iteratively denoising random noise into a realistic image." },
+      { q: "A team's GAN produces sharp images, but training keeps collapsing. What's the likely reason?", options: ["GANs can't produce sharp images, so it isn't a GAN", "GANs need text prompts, which the team didn't provide", "The two competing networks make training unstable", "GANs only work on audio, not on image data"], answer: 2, explain: "A GAN's generator and discriminator compete. That yields sharp results but makes training tricky, one reason diffusion took over image generation." },
     ],
   },
 ]);
