@@ -27,6 +27,8 @@ python3 -m http.server 8000
 - **Search** — type a concept or anything you remember from a lesson (e.g. `attention`,
   `cold start`, `feedback loops`). Names rank first; lesson-content hits show a snippet of
   where the term appears. All matches highlight in the graph.
+  With a learning path on, search is limited to that path (each hit shows its step), with
+  a one-click switch to the whole atlas.
 - **Filter** — click a domain in the legend to hide/show it.
 - **Learn** — click a node → read the lesson → follow the connection chips to related ideas.
 - **Quiz** — take the quiz at the end of a lesson. Score ≥ 75% and the node is marked
@@ -36,8 +38,8 @@ python3 -m http.server 8000
   using. Click the progress line (under the title) to **Export** it to a JSON file, then
   **Import** that file on another device/browser to merge it in. The same menu has a
   **Reset**.
-- **Learning Path** — click **◆ Learning Path**, pick a destination (a single concept, a
-  whole domain, or the complete curriculum), and the atlas orders the prerequisites for
+- **Learning Path** — click **◆ Learning Path**, pick a destination (search for a concept
+  or domain, pick a whole domain, or take the complete curriculum), and the atlas orders the prerequisites for
   you — skipping anything you've already mastered — into a numbered, checkable itinerary.
   The route is highlighted in the graph; each quiz you pass advances the path to the next
   concept. (This is why the prerequisite links must stay acyclic — the validator enforces it.)

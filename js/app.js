@@ -308,15 +308,24 @@
   var clearBtn = document.getElementById("search-clear");
   var searchIndex = AtlasSearch.create(ATLAS.nodes);
   var activeResult = -1;
+  // While a learning path is active, search is scoped to its nodes unless the
+  // user widens it; `searchWholeAtlas` resets whenever the query is cleared.
+  var searchWholeAtlas = false;
 
-  searchEl.addEventListener("input", function () {
+  searchEl.addEventListener("input", runSearch);
+
+  function runSearch() {
     var q = searchEl.value.trim();
     clearBtn.style.display = q ? "block" : "none";
-    if (!q) { resultsEl.classList.remove("open"); liveHighlight([]); return; }
-    var matches = searchIndex.search(q);
-    renderResults(matches.slice(0, 12), q, matches.length);
+    if (!q) { searchWholeAtlas = false; resultsEl.classList.remove("open"); liveHighlight([]); return; }
+    var all = searchIndex.search(q);
+    var scoped = pathState.active && !searchWholeAtlas;
+    var matches = scoped ? searchIndex.search(q, { only: pathState.sequence }) : all;
+    renderResults(matches.slice(0, 12), q, matches.length, {
+      path: pathState.active, scoped: scoped, outside: all.length - (scoped ? matches.length : 0),
+    });
     liveHighlight(matches.map(function (m) { return m.id; }));
-  });
+  }
 
   // Escape `text` and wrap every query-term match in <mark>.
   function markMatches(text, q) {
@@ -340,26 +349,51 @@
 
   var FIELD_LABEL = { short: "summary", heading: "section", keyPoints: "key point", why: "why it matters", body: "lesson", quiz: "quiz" };
 
-  function renderResults(matches, q, total) {
+  // One search hit as a list item. `meta` replaces the domain name on the right.
+  function resultItemHtml(m, q, meta) {
+    var c = CL[m.cluster];
+    return '<li data-id="' + m.id + '">' +
+      '<div class="r-row">' +
+        '<span class="dot" style="background:' + (c ? c.color : "#888") + '"></span>' +
+        '<span class="r-label">' + markMatches(m.label, q) + "</span>" +
+        '<span class="r-cluster">' + (meta != null ? meta : (c ? escapeHtml(c.label) : "")) + "</span>" +
+      "</div>" +
+      (m.snippet ? '<div class="r-snippet"><span class="r-field">' + FIELD_LABEL[m.field] + "</span>" + markMatches(m.snippet, q) + "</div>" : "") +
+      "</li>";
+  }
+
+  function stepMeta(id) {
+    var i = pathState.sequence.indexOf(id);
+    return i === -1 ? null : "Step " + (i + 1) + " of " + pathState.sequence.length;
+  }
+
+  function renderResults(matches, q, total, scope) {
     activeResult = -1;
-    if (!matches.length) {
-      resultsEl.innerHTML = '<li class="r-empty">Nothing in the atlas mentions “' + escapeHtml(q) + "”.</li>";
-      resultsEl.classList.add("open");
-      return;
+    var html = "";
+    if (scope.path) {
+      html += '<li class="r-scope">' + (scope.scoped
+        ? "<span>In your path · " + escapeHtml(goalLabel()) + "</span>" +
+          (scope.outside ? '<button data-scope="all">Search whole atlas (' + scope.outside + " more)</button>" : "")
+        : '<span>Whole atlas</span><button data-scope="path">Only my path</button>') + "</li>";
     }
-    resultsEl.innerHTML = matches.map(function (m) {
-      var c = CL[m.cluster];
-      return '<li data-id="' + m.id + '">' +
-        '<div class="r-row">' +
-          '<span class="dot" style="background:' + (c ? c.color : "#888") + '"></span>' +
-          '<span class="r-label">' + markMatches(m.label, q) + "</span>" +
-          '<span class="r-cluster">' + (c ? c.label : "") + "</span>" +
-        "</div>" +
-        (m.snippet ? '<div class="r-snippet"><span class="r-field">' + FIELD_LABEL[m.field] + "</span>" + markMatches(m.snippet, q) + "</div>" : "") +
-        "</li>";
-    }).join("") +
-      (total > matches.length ? '<li class="r-more">+ ' + (total - matches.length) + " more highlighted on the graph</li>" : "");
+    if (!matches.length) {
+      html += '<li class="r-empty">Nothing ' + (scope.scoped ? "in this path" : "in the atlas") + " mentions “" + escapeHtml(q) + "”.</li>";
+    } else {
+      html += matches.map(function (m) {
+        var step = scope.path ? stepMeta(m.id) : null;
+        return resultItemHtml(m, q, step && escapeHtml(step));
+      }).join("");
+      if (total > matches.length) html += '<li class="r-more">+ ' + (total - matches.length) + " more highlighted on the graph</li>";
+    }
+    resultsEl.innerHTML = html;
     resultsEl.classList.add("open");
+    resultsEl.querySelectorAll("[data-scope]").forEach(function (b) {
+      b.addEventListener("mousedown", function (e) {
+        e.preventDefault();   // keep focus in the search box
+        searchWholeAtlas = b.getAttribute("data-scope") === "all";
+        runSearch();
+      });
+    });
     resultsEl.querySelectorAll("li[data-id]").forEach(function (li) {
       li.addEventListener("mousedown", function (e) {
         e.preventDefault();
@@ -874,15 +908,10 @@
     });
     html += "</div></div>";
 
-    html += '<div class="path-goal-group"><h4>Or reach one concept</h4><select id="path-concept-select"><option value="">Choose a concept…</option>';
-    Object.keys(CL).forEach(function (cid) {
-      html += '<optgroup label="' + escapeHtml(CL[cid].label) + '">';
-      ATLAS.nodes.filter(function (n) { return n.cluster === cid; }).forEach(function (n) {
-        html += '<option value="' + n.id + '">' + escapeHtml(n.label) + "</option>";
-      });
-      html += "</optgroup>";
-    });
-    html += "</select></div>";
+    html += '<div class="path-goal-group"><h4>Or reach one concept</h4>' +
+      '<input id="path-goal-search" type="text" autocomplete="off" spellcheck="false" ' +
+      'placeholder="Search for a concept or domain — e.g. agents, evals, transformers…" />' +
+      '<ul id="path-goal-results" class="goal-results" role="listbox"></ul></div>';
 
     html += '<div class="path-goal-group"><button class="btn-secondary" data-gtype="all" style="width:100%">The complete curriculum — everything, in order</button></div>';
 
@@ -891,8 +920,51 @@
       b.addEventListener("click", function () { startPath({ type: "cluster", id: b.getAttribute("data-gid") }); });
     });
     panelScroll.querySelector("[data-gtype=all]").addEventListener("click", function () { startPath({ type: "all" }); });
-    panelScroll.querySelector("#path-concept-select").addEventListener("change", function () {
-      if (this.value) startPath({ type: "node", id: this.value });
+    wireGoalSearch(panelScroll.querySelector("#path-goal-search"), panelScroll.querySelector("#path-goal-results"));
+  }
+
+  // Type-ahead for choosing a path goal: matching domains first, then concepts.
+  // Each row shows how many steps that path would take.
+  function wireGoalSearch(input, list) {
+    var active = -1, items = [];
+
+    function render() {
+      var q = input.value.trim();
+      active = -1;
+      if (!q) { list.innerHTML = ""; items = []; return; }
+      var terms = AtlasSearch.terms(q);
+      var html = "";
+      Object.keys(CL).forEach(function (cid) {
+        var c = CL[cid];
+        if (!terms.every(function (t) { return AtlasSearch.matchRanges(c.label, t).length; })) return;
+        var steps = computeSequence({ type: "cluster", id: cid }).length;
+        html += '<li data-gtype="cluster" data-gid="' + cid + '"><div class="r-row">' +
+          '<span class="dot" style="background:' + c.color + '"></span>' +
+          '<span class="r-label">' + markMatches(c.label, q) + "</span>" +
+          '<span class="r-cluster">Whole domain · ' + steps + " steps</span></div></li>";
+      });
+      var hits = searchIndex.search(q, { limit: 8 });
+      html += hits.map(function (m) {
+        var steps = computeSequence({ type: "node", id: m.id }).length;
+        return resultItemHtml(m, q, steps + (steps === 1 ? " step" : " steps")).replace("<li ", '<li data-gtype="node" data-gid="' + m.id + '" ');
+      }).join("");
+      list.innerHTML = html || '<li class="r-empty">Nothing in the atlas mentions “' + escapeHtml(q) + "”.</li>";
+      items = [].slice.call(list.querySelectorAll("li[data-gtype]"));
+      items.forEach(function (li) { li.addEventListener("click", function () { choose(li); }); });
+    }
+
+    function choose(li) {
+      startPath({ type: li.getAttribute("data-gtype"), id: li.getAttribute("data-gid") });
+    }
+
+    input.addEventListener("input", render);
+    input.addEventListener("keydown", function (e) {
+      if (e.key === "ArrowDown") { e.preventDefault(); active = Math.min(active + 1, items.length - 1); }
+      else if (e.key === "ArrowUp") { e.preventDefault(); active = Math.max(active - 1, 0); }
+      else if (e.key === "Enter") { var li = items[active] || items[0]; if (li) choose(li); return; }
+      else return;
+      items.forEach(function (it, i) { it.classList.toggle("active", i === active); });
+      if (items[active]) items[active].scrollIntoView({ block: "nearest" });
     });
   }
 
@@ -949,6 +1021,11 @@
     if (!btn) return;
     btn.classList.toggle("on", pathState.active);
     btn.textContent = pathState.active ? "◆ Path on" : "◆ Learning Path";
+    searchEl.placeholder = pathState.active
+      ? "Search your path — names and lesson content…"
+      : "Search names and lesson content — e.g. attention, cold start, feedback loops…";
+    searchWholeAtlas = false;
+    if (searchEl.value.trim()) runSearch();
   }
 
   document.getElementById("btn-path").addEventListener("click", openPathPanel);
