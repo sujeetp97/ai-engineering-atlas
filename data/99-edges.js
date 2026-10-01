@@ -289,4 +289,14 @@ ATLAS.addEdges([
   { source: "linear-algebra", target: "deep-learning", type: "prereq" },
   { source: "data-science", target: "ai-engineering", type: "related" },
   { source: "reinforcement-learning", target: "ai-agents", type: "related" },
+
+  // ============================ PLAIN-ENGLISH ON-RAMP (non-technical role paths) ============================
+  { source: "how-ai-assistants-work", target: "ai-assisted-work", type: "partof" },
+  { source: "how-ai-assistants-work", target: "large-language-models", type: "related" },
+  { source: "how-ai-assistants-work", target: "ai-limitations", type: "prereq" },
+  { source: "how-ai-assistants-work", target: "everyday-prompting", type: "prereq" },
+  { source: "everyday-prompting", target: "ai-assisted-work", type: "partof" },
+  { source: "everyday-prompting", target: "prompt-engineering", type: "related" },
+  { source: "everyday-prompting", target: "writing-with-ai", type: "prereq" },
+  { source: "everyday-prompting", target: "research-with-ai", type: "prereq" },
 ]);
