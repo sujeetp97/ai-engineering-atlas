@@ -46,6 +46,12 @@ Then load the app and spot-check the new node (Learn renders, Quiz scores, chips
 ```bash
 python3 -m http.server 8000     # then open http://localhost:8000
 ```
+To test without a server, rebuild the single-file copy of the app and open it directly:
+```bash
+node tools/build-standalone.js  # inlines index.html's CSS/data/JS into atlas-search-test.html (gitignored)
+```
+It is a testing convenience, not a build step — the site itself never loads that file.
+
 Fix every validator **error** (warnings are advisory). Only then commit.
 
 ## Commit conventions
