@@ -13,7 +13,7 @@
   var steps = [
     {
       title: "Welcome to the Atlas 👋",
-      body: "A living map of AI engineering — 108 connected concepts across eight domains, from the math underneath to using AI for real work. Here's a 30-second tour.",
+      body: "A living map of AI engineering — " + (window.__atlas ? window.__atlas.data.nodes.length : "100+") + " connected concepts across eight domains, from the math underneath to using AI for real work. Here's a 30-second tour.",
       primary: "Show me",
     },
     {

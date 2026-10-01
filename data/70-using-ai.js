@@ -422,4 +422,90 @@ ATLAS.addNodes([
       { q: "A limitation you read about last year may not hold today. What's the right stance?", options: ["Assume last year's list still applies until told otherwise", "Test the model on your own task and update your view", "Assume new models have fixed every earlier weakness", "Avoid the AI for anything that was once a weakness"], answer: 1, explain: "Limits move as models improve, some quickly and some slowly. Stay empirical: test what the model can do for your task, verify, and update your view." },
     ],
   },
+
+  {
+    id: "how-ai-assistants-work",
+    label: "How AI Assistants Work",
+    cluster: "work",
+    short: "What a chatbot like ChatGPT or Claude is actually doing, in plain English with no math.",
+    keywords: "chatbot chatgpt claude gemini copilot assistant llm plain english beginner how it works next word prediction non-technical",
+    learn: {
+      why: "You don't need to know the engineering to use AI well, but you do need a working mental model. Knowing roughly what an assistant is doing explains both why it's so useful and why it sometimes makes things up with total confidence.",
+      sections: [
+        { h: "A very well-read autocomplete", body: [
+          "An AI assistant is built on a **large language model**. In training it read an enormous amount of text and learned one skill: given some text, **predict what comes next**. When you ask it something, it writes the answer a small piece at a time, each time picking a likely next piece.",
+          "That sounds simple, but doing it well across almost every topic forces the model to pick up grammar, facts, writing styles and patterns of reasoning. That's where its surprising abilities come from.",
+        ]},
+        { h: "Then it's taught to be an assistant", body: [
+          "A model fresh from that first stage only continues text. It's then trained further, on examples of good answers and on people's ratings of which answers are better, so that it follows requests, declines harmful ones and writes in a helpful tone.",
+        ]},
+        { h: "Why it can be confidently wrong", body: [
+          { ul: [
+            "**It isn't looking things up.** What it 'knows' is a blurry memory of its training text, not a database. When it doesn't know, it can produce something that merely sounds right.",
+            "**It sounds equally sure either way.** The fluent, confident tone is the same whether the answer is right or wrong.",
+            "**It may be out of date.** Unless it's connected to search, it only knows its training data, up to a cutoff date.",
+            "**It only knows what's in the conversation.** It doesn't know your company, your project or your goals unless you tell it.",
+          ]},
+        ]},
+        { h: "What this means for you", body: [
+          "Treat it like a fast, knowledgeable, occasionally wrong colleague: great for drafts, explanations, brainstorming and summaries, and something to check when facts, numbers or decisions matter. Many assistants can now search the web or read your files, which helps, but you're still responsible for the result.",
+        ]},
+      ],
+      keyPoints: [
+        "An assistant runs on a model trained to predict the next piece of text, and writes its answers one piece at a time.",
+        "Further training on good examples and human ratings turns that predictor into a helpful assistant.",
+        "It doesn't look facts up, so it can be confidently wrong, out of date, or unaware of your context. Check what matters.",
+      ],
+      source: { title: "Timothy B. Lee & Sean Trott — Large language models, explained with a minimum of math and jargon", url: "https://www.understandingai.org/p/large-language-models-explained-with", note: "A clear, non-technical walkthrough of how these models work and why they make mistakes." },
+    },
+    quiz: [
+      { q: "A coworker says the AI 'looked up' a figure it gave them. Assuming it had no web search, what's a more accurate picture of what happened?", options: ["It searched a database of verified company facts", "It wrote a likely answer from patterns it learned", "It copied the figure from another user's chat", "It asked a human expert and relayed their answer"], answer: 1, explain: "Without search or access to your files, an assistant generates a plausible answer from what it learned in training. That's why figures need checking." },
+      { q: "Why does an assistant sound just as confident when it's wrong as when it's right?", options: ["It's deliberately designed to hide its mistakes", "It only replies when it's completely sure it's right", "Its fluent tone doesn't depend on being correct", "Its confidence is set by the person who's asking"], answer: 2, explain: "It's trained to write fluent, helpful text, and that tone stays the same whether or not the content is accurate. You can't judge correctness by how sure it sounds." },
+      { q: "You ask an assistant without web search about something that happened last week. What's most likely?", options: ["It will always say it can't know recent events", "It will know, since it updates itself every day", "It will refuse to answer any question about news", "It may not know, or may confidently guess wrong"], answer: 3, explain: "Without search, it only knows its training data up to a cutoff date, and it won't always say so. For recent events, use a tool with search, or check a source." },
+    ],
+  },
+
+  {
+    id: "everyday-prompting",
+    label: "Prompting for Everyday Work",
+    cluster: "work",
+    short: "How to brief an AI like a capable new colleague, so you get useful answers the first time.",
+    keywords: "prompting prompt tips how to ask chatgpt claude brief context examples format iterate everyday non-technical beginner",
+    learn: {
+      why: "What you get back depends heavily on what you ask. Most disappointing AI answers come from vague requests rather than weak models, and a few habits fix most of them.",
+      sections: [
+        { h: "Brief it like a capable new colleague", body: [
+          "Imagine handing the task to someone smart who joined today and knows nothing about your team, your customers or your goals. They'd need the background, what you want, and what a good result looks like. An AI needs the same.",
+          "A useful test from Anthropic's own guidance: if a colleague with no context would be confused by your request, the AI will be too.",
+        ]},
+        { h: "What to include", body: [
+          { ul: [
+            "**The goal, and why**: what this is for, and who will read it.",
+            "**The context**: the facts, documents or notes it needs. Paste them in rather than assuming it knows them.",
+            "**The format**: length, structure and tone, e.g. 'three bullet points, plain language, for a busy executive'.",
+            "**An example**: if you have one of the style or output you want, show it.",
+            "**Constraints**: what to avoid, and what must be included.",
+          ]},
+        ]},
+        { h: "Iterate instead of starting over", body: [
+          "Treat the first answer as a draft. Say what's off and what to change: 'shorter', 'less formal', 'you missed the pricing change'. On bigger tasks, asking it to list the questions it needs answered before it starts often helps, and so does breaking the work into steps.",
+        ]},
+        { h: "Before and after", body: [
+          "**Vague:** 'Write an email about the delay.'",
+          "**Better:** 'Write a short, apologetic email to our customer Acme about the two-week delay to their order, caused by a supplier shortage. Offer free shipping on their next order. Friendly, professional tone, under 120 words.'",
+        ]},
+      ],
+      keyPoints: [
+        "Brief the AI like a smart new colleague with no context: goal, background, format, an example, and constraints.",
+        "Paste in the facts it needs rather than assuming it already knows them.",
+        "Treat the first answer as a draft, and refine it with specific feedback.",
+      ],
+      source: { title: "Anthropic — Prompting best practices", url: "https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-prompting-best-practices", note: "The opening section on being clear and direct, including the 'new employee' framing and the colleague test, applies to anyone, not just developers." },
+    },
+    quiz: [
+      { q: "You ask an AI to 'summarize this for my boss' and get a long, generic summary. What would most improve the next try?", options: ["Ask the same question again until it improves", "Switch to a different AI tool and paste it there", "Say what your boss cares about and the length", "Add 'please' and 'thank you' to the request"], answer: 2, explain: "Vague requests get generic answers. Give the goal, the audience and the format, the way you'd brief a new colleague." },
+      { q: "An AI drafts a reply to a customer but gets your refund policy wrong. What's the best fix?", options: ["Tell it to be more accurate this time", "Paste the actual policy into your request", "Ask it whether it knows your company's policy", "Use a longer, more formal tone in the request"], answer: 1, explain: "It doesn't know your company's documents unless you provide them. Paste in the facts it needs instead of hoping it knows them." },
+      { q: "An AI's first draft is close, but too formal and a bit long. What's the most efficient next step?", options: ["Start a brand-new chat and write the prompt from scratch", "Accept it as is, since AI drafts can't be adjusted", "Rewrite the whole thing yourself from the beginning", "Reply with specific changes: 'more casual, half as long'"], answer: 3, explain: "Treat the first answer as a draft and iterate with specific feedback. The chat keeps the context, so it usually gets there faster than starting over." },
+    ],
+  },
 ]);
