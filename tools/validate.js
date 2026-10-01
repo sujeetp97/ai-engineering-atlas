@@ -23,12 +23,19 @@ const FILES = [
   "70-using-ai.js",
   "80-cross-cutting.js",
   "99-edges.js",
+  "90-paths.js",
 ];
 
 const EDGE_TYPES = ["prereq", "partof", "enables", "uses", "related"];
 // Edge types that imply a "must come before" ordering (used for the DAG check
 // and for future learning-path generation). "related" is undirected/ignored.
 const ORDERING_TYPES = ["prereq", "partof", "enables"];
+
+// `--quiz` lists every quiz question whose answer is given away by its length.
+const LIST_QUIZ_LEAKS = process.argv.includes("--quiz");
+// Correct option is the longest by this factor over the average distractor.
+const LEAK_RATIO = 1.5;
+const quizLeaks = [];   // { cluster, tag }
 
 const errors = [];
 const warnings = [];
@@ -87,6 +94,15 @@ for (const n of nodes) {
       if (!Array.isArray(item.options) || item.options.length < 2) err(`${tag} needs at least 2 options`);
       else if (typeof item.answer !== "number" || item.answer < 0 || item.answer >= item.options.length)
         err(`${tag} has an out-of-range answer index (${item.answer})`);
+      else {
+        // options are shuffled on screen, but a much longer correct option still gives it away
+        const lens = item.options.map((o) => String(o).length);
+        const others = lens.filter((_, k) => k !== item.answer);
+        const avg = others.reduce((a, b) => a + b, 0) / others.length;
+        if (lens[item.answer] > Math.max(...others) && lens[item.answer] >= LEAK_RATIO * avg) {
+          quizLeaks.push({ cluster: n.cluster, tag: `${tag}: "${String(item.q).slice(0, 60)}"` });
+        }
+      }
       if (!item.explain) warn(`${tag} has no explanation`);
     });
   }
@@ -145,6 +161,62 @@ if (nodes.length) {
   if (cycle) err(`Prerequisite cycle detected (breaks learning paths): ${cycle.join(" -> ")}`);
 })();
 
+// curated learning paths (data/90-paths.js)
+(function checkPaths() {
+  const paths = ATLAS.paths || [];
+  const pathIds = {};
+  // Curated paths honour real dependencies (prereq/enables) but may put an
+  // overview before its parts: "partof" orders parts-before-whole for the
+  // goal-driven paths, while a curated path can use the overview as an intro.
+  const revDag = {};
+  nodes.forEach((n) => { revDag[n.id] = []; });
+  edges.forEach((e) => {
+    if ((e.type === "prereq" || e.type === "enables") && revDag[e.target] && byId[e.source]) revDag[e.target].push(e.source);
+  });
+  // ancestors(x) = every node that must be learned before x, transitively
+  const ancestors = {};
+  function anc(id) {
+    if (ancestors[id]) return ancestors[id];
+    const out = new Set(); ancestors[id] = out;
+    (revDag[id] || []).forEach((p) => { out.add(p); anc(p).forEach((a) => out.add(a)); });
+    return out;
+  }
+
+  paths.forEach((p, i) => {
+    const tag = `Path #${i} "${p.id || "?"}"`;
+    if (!p.id) err(`${tag} has no id`);
+    else if (pathIds[p.id]) err(`Duplicate path id "${p.id}"`);
+    else pathIds[p.id] = 1;
+    if (!p.label) err(`${tag} has no label`);
+    if (!p.audience) warn(`${tag} has no audience line`);
+    if (!Array.isArray(p.steps) || !p.steps.length) { err(`${tag} has no steps`); return; }
+    const seen = {};
+    p.steps.forEach((id) => {
+      if (!byId[id]) err(`${tag} step "${id}" is not a node id`);
+      if (seen[id]) err(`${tag} lists "${id}" more than once`);
+      seen[id] = 1;
+    });
+    // order must respect prerequisites among the path's own steps
+    const pos = {};
+    p.steps.forEach((id, k) => { pos[id] = k; });
+    p.steps.forEach((id) => {
+      if (!byId[id]) return;
+      anc(id).forEach((a) => {
+        if (pos[a] != null && pos[a] > pos[id]) err(`${tag}: "${a}" must come before "${id}" (it's a prerequisite)`);
+      });
+    });
+  });
+})();
+
+if (quizLeaks.length) {
+  const byCluster = {};
+  quizLeaks.forEach((l) => { byCluster[l.cluster] = (byCluster[l.cluster] || 0) + 1; });
+  warn(`${quizLeaks.length} quiz question(s) give the answer away by length — the correct option is ` +
+    `≥${LEAK_RATIO}× the average distractor (${Object.entries(byCluster).map(([k, v]) => `${k}:${v}`).join("  ")}). ` +
+    (LIST_QUIZ_LEAKS ? "Listed below." : "Run with --quiz to list them."));
+  if (LIST_QUIZ_LEAKS) quizLeaks.forEach((l) => warn(`  length giveaway — ${l.tag}`));
+}
+
 // ---- report ----
 const clusterCounts = {};
 nodes.forEach((n) => { clusterCounts[n.cluster] = (clusterCounts[n.cluster] || 0) + 1; });
@@ -154,6 +226,7 @@ console.log("--------------------------------------");
 console.log(`Clusters : ${Object.keys(clusters).length}`);
 console.log(`Nodes    : ${nodes.length}  (${Object.entries(clusterCounts).map(([k, v]) => `${k}:${v}`).join("  ")})`);
 console.log(`Edges    : ${edges.length}`);
+console.log(`Paths    : ${(ATLAS.paths || []).map((p) => `${p.id}(${(p.steps || []).length})`).join("  ")}`);
 console.log(`Avg degree: ${(edges.length * 2 / (nodes.length || 1)).toFixed(1)}`);
 console.log("");
 

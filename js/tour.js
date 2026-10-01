@@ -13,7 +13,7 @@
   var steps = [
     {
       title: "Welcome to the Atlas 👋",
-      body: "A living map of AI engineering — 108 connected concepts across eight domains, from the math underneath to using AI for real work. Here's a 30-second tour.",
+      body: "A living map of AI engineering — " + (window.__atlas ? window.__atlas.data.nodes.length : "100+") + " connected concepts across eight domains, from the math underneath to using AI for real work. Here's a 30-second tour.",
       primary: "Show me",
     },
     {
@@ -26,7 +26,7 @@
       target: ".search-wrap",
       side: "below",
       title: "Search anything",
-      body: "Type a concept — like “attention” or “RAG”. Matches light up across the graph and you can jump straight to one from the dropdown.",
+      body: "Type a concept or anything you remember from a lesson — like “attention” or “cold start”. Matches light up across the graph and you can jump straight to one from the dropdown. With a learning path on, search sticks to your path.",
     },
     {
       panel: true, openNode: SAMPLE_NODE,
@@ -43,11 +43,16 @@
     {
       target: "#btn-path", side: "below",
       title: "Follow a learning path",
-      body: "Not sure where to start? Click Learning Path, pick a goal, and the atlas orders the prerequisites for you — skipping anything you've already mastered.",
+      body: "Not sure where to start? Click Learning Path and pick the path for your role — or build your own from any goal.",
+    },
+    {
+      target: "#btn-sync", side: "below",
+      title: "Keep your progress safe",
+      body: "Progress saves in this browser. Save it to a file too, and every change is kept there automatically — so you can pick up again even if the browser forgets.",
     },
     {
       title: "You're all set 🎈",
-      body: "Explore freely, search, or follow a path. Your progress saves in this browser, and you can replay this tour anytime from the “?” button. Happy learning.",
+      body: "Explore freely, search, or follow a path. You can replay this tour anytime from the “?” button. Happy learning.",
       primary: "Start exploring",
     },
   ];
@@ -188,6 +193,7 @@
   function end() {
     markSeen();
     root.classList.remove("open");
+    document.dispatchEvent(new CustomEvent("atlas:tour-end"));
     // close the sample panel if the tour opened it, and clear any graph highlight
     if (openedNode) {
       var b = document.getElementById("panel-close");

@@ -14,6 +14,7 @@ the quality bar, and the recipes. This file is the short version.
 
 ## The golden rules
 1. **Nodes** go in the matching `data/NN-domain.js`. **All edges** go in `data/99-edges.js`.
+   Curated role-based **learning paths** go in `data/90-paths.js` (see `docs/AUTHORING.md`).
 2. **Never leave a node orphaned** — every node needs ≥ 2–3 edges, including a cross-domain
    link where the real dependency exists. Connectivity is the whole point.
 3. **`prereq` / `enables` / `partof` edges must not form a cycle** (they define learning
@@ -22,7 +23,7 @@ the quality bar, and the recipes. This file is the short version.
    mechanism plainly, cites **one real, high-trust primary source** (never invent a URL),
    is honest about limitations. Quizzes test understanding with plausible distractors and
    options of similar length (don't leak the answer via formatting). See the `teach` skill.
-5. **After any change to `data/*.js`, `js/app.js`, or `css/styles.css`, bump its `?v=`
+5. **After any change to `data/*.js`, `js/*.js`, or `css/styles.css`, bump its `?v=`
    number in `index.html`** — otherwise the browser serves a stale cached copy.
 6. Keep node `id`s stable; renaming one means updating every edge that references it.
 
@@ -38,7 +39,8 @@ the quality bar, and the recipes. This file is the short version.
 
 ## Verify before you're done
 ```bash
-node tools/validate.js          # unique ids, valid refs, no orphans, connected, DAG, quiz sanity
+node tools/validate.js          # unique ids, valid refs, no orphans, connected, DAG, paths, quiz sanity
+node tools/validate.js --quiz   # also list quiz questions that give the answer away by length
 ```
 Then load the app and spot-check the new node (Learn renders, Quiz scores, chips navigate):
 ```bash
@@ -47,7 +49,9 @@ python3 -m http.server 8000     # then open http://localhost:8000
 Fix every validator **error** (warnings are advisory). Only then commit.
 
 ## Commit conventions
-- Work on a branch off `main` unless told otherwise; don't push without being asked.
+- Branch model: `main` is what's deployed; `develop` is the integration branch. Do work on
+  `feature/<issue#>-<slug>` branches cut from `develop` and open PRs back into `develop`.
+  Every piece of work should trace to a GitHub issue. Don't push without being asked.
 - Conventional, descriptive messages (e.g. `Add RAG evaluation concepts to AI Engineering`).
 - End commit messages with the attribution line the session specifies.
 

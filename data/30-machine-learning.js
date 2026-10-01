@@ -34,9 +34,9 @@ ATLAS.addNodes([
       source: { title: "Google — Machine Learning Crash Course", url: "https://developers.google.com/machine-learning/crash-course", note: "A free, hands-on introduction to the core ideas." },
     },
     quiz: [
-      { q: "How does machine learning differ from traditional programming?", options: ["It runs without electricity", "Rules are learned from examples rather than hand-coded", "It never uses data", "It only works on images"], answer: 1, explain: "ML infers the mapping from data, whereas traditional programming encodes rules explicitly by hand." },
-      { q: "The ultimate goal of a trained model is to…", options: ["Memorize the training set perfectly", "Generalize well to new, unseen data", "Use the most parameters possible", "Avoid all math"], answer: 1, explain: "Performance on unseen data is what matters; memorizing training data is not learning." },
-      { q: "Which is NOT one of the three main families of ML?", options: ["Supervised learning", "Unsupervised learning", "Reinforcement learning", "Compiled learning"], answer: 3, explain: "The three families are supervised, unsupervised, and reinforcement learning." },
+      { q: "A bank wants to flag fraudulent transactions. Instead of writing rules like 'amount > $5,000', it trains on past labeled transactions. What's the key shift?", options: ["The rules become simpler, so fraud is easier to spot", "The rules are learned from examples, not written by hand", "The computer no longer needs any data to decide", "Every past transaction is stored and looked up later"], answer: 1, explain: "Machine learning inverts programming: you supply examples, and an algorithm infers the mapping instead of a human coding the rules." },
+      { q: "A model scores 99% on its training data but 60% on new data. What's gone wrong?", options: ["It's working as intended — training score is what counts", "The new data must have been labeled incorrectly", "It memorized training data instead of generalizing", "It needs to be tested on the training data again"], answer: 2, explain: "The goal is generalization to unseen data. A big gap between training and new-data performance means the model memorized rather than learned." },
+      { q: "A robot learns to walk by trying moves and getting rewards for staying upright. Which learning family is this?", options: ["Supervised learning", "Unsupervised learning", "Self-supervised learning", "Reinforcement learning"], answer: 3, explain: "Learning by trial and error from rewards is reinforcement learning. Supervised learning needs labeled answers; unsupervised learning finds structure without labels." },
     ],
   },
 
@@ -71,9 +71,9 @@ ATLAS.addNodes([
       source: { title: "Google — Supervised learning framing", url: "https://developers.google.com/machine-learning/crash-course/framing/supervised", note: "Clean framing of labels, features, and targets." },
     },
     quiz: [
-      { q: "Supervised learning requires…", options: ["No data at all", "Inputs paired with known correct outputs (labels)", "Only images", "A reward signal instead of labels"], answer: 1, explain: "Supervised learning learns from labeled input–output pairs." },
-      { q: "Predicting tomorrow's temperature (a number) is a…", options: ["Classification task", "Regression task", "Clustering task", "Reinforcement task"], answer: 1, explain: "Predicting a continuous value is regression; predicting a category is classification." },
-      { q: "Why is LLM next-token prediction called self-supervised?", options: ["Humans label every token", "The label (the next token) comes free from the data itself", "It uses no data", "It needs a reward model"], answer: 1, explain: "The next token in the text is the target, so labels are generated automatically from raw text." },
+      { q: "Predicting tomorrow's electricity demand in megawatts is which kind of task?", options: ["Classification", "Regression", "Clustering", "Dimensionality reduction"], answer: 1, explain: "Predicting a continuous number is regression. Classification predicts categories; clustering and dimensionality reduction are unsupervised." },
+      { q: "Which of these is a classification problem?", options: ["Estimating how many minutes a ticket takes to close", "Forecasting next month's total ticket volume", "Deciding which of 5 product categories a ticket is", "Predicting a customer's lifetime spend in dollars"], answer: 2, explain: "Classification predicts a category. The other three predict continuous numbers, which is regression." },
+      { q: "How does LLM pretraining fit into supervised learning?", options: ["Human annotators label the next token for each page", "It isn't learning at all; it only memorizes text", "It uses reward signals instead of any labels", "The next token is a free label taken from the text"], answer: 3, explain: "Self-supervised pretraining is supervised learning with labels that come free from the data: the actual next token is the target." },
     ],
   },
 
@@ -109,9 +109,9 @@ ATLAS.addNodes([
       source: { title: "StatQuest — Clustering and PCA playlists", url: "https://statquest.org/video-index/", note: "Intuitive walkthroughs of the main unsupervised methods." },
     },
     quiz: [
-      { q: "The defining feature of unsupervised learning is that…", options: ["It uses labeled data", "It works with unlabeled data to find structure", "It requires a reward function", "It only does regression"], answer: 1, explain: "Unsupervised learning discovers patterns in data without labels." },
-      { q: "Grouping customers into segments without predefined categories is…", options: ["Regression", "Clustering", "Classification", "Labeling"], answer: 1, explain: "Clustering groups similar items when no predefined labels exist." },
-      { q: "Why is evaluating unsupervised learning harder than supervised?", options: ["It uses more GPUs", "There is no ground-truth answer to compare against", "It has no data", "The math is illegal"], answer: 1, explain: "Without labels, there's no direct correct answer, so evaluation relies on indirect measures and judgment." },
+      { q: "A retailer wants to discover natural customer groups, with no predefined labels. Which task is this?", options: ["Regression", "Classification", "Clustering", "Reinforcement learning"], answer: 2, explain: "Grouping similar items without labels is clustering, a core unsupervised task often used for customer segmentation." },
+      { q: "Why is evaluating an unsupervised model harder than a supervised one?", options: ["Unsupervised models can't be run on new data", "There's no ground-truth answer to score against", "They always take much longer to train", "Their outputs can't be plotted or inspected"], answer: 1, explain: "With no labels, there's no direct accuracy to measure, so you rely on indirect metrics and domain knowledge to judge the structure found." },
+      { q: "A payments team wants to flag unusual transactions but has no labeled fraud examples. Which approach fits?", options: ["Train a classifier on labeled fraud cases", "Use regression to predict transaction amounts", "Cluster users by name in alphabetical order", "Model normal behavior and flag outliers"], answer: 3, explain: "Anomaly detection models what 'normal' looks like and flags what doesn't fit, with no labels needed." },
     ],
   },
 
@@ -142,9 +142,9 @@ ATLAS.addNodes([
       source: { title: "Sutton & Barto — Reinforcement Learning: An Introduction (free)", url: "http://incompleteideas.net/book/the-book-2nd.html", note: "The canonical RL textbook, freely available." },
     },
     quiz: [
-      { q: "In reinforcement learning, the agent learns from…", options: ["Labeled correct answers", "Rewards received after taking actions", "Nothing — it is random", "Only images"], answer: 1, explain: "RL uses a reward signal, not labeled outputs, to learn which actions are good." },
-      { q: "The exploration–exploitation trade-off is about…", options: ["Choosing a GPU", "Trying new actions vs. relying on known-good ones", "Cleaning data", "Splitting the dataset"], answer: 1, explain: "The agent must balance discovering better strategies (explore) against using what already works (exploit)." },
-      { q: "RLHF uses reinforcement learning to…", options: ["Pretrain the model from scratch", "Fine-tune an LLM toward human-preferred responses using a reward model", "Label the training data", "Compress the model"], answer: 1, explain: "RLHF optimizes the model against a reward model built from human preference data." },
+      { q: "A game-playing agent keeps using one decent strategy and never discovers a much better one. Which tension is it failing to balance?", options: ["Bias versus variance in the model", "Exploration versus exploitation", "Precision versus recall of its moves", "Training speed versus inference speed"], answer: 1, explain: "Exploiting what works earns reward now; exploring new actions may find something better. RL agents must balance the two." },
+      { q: "A chess agent's move looks bad now but wins the game 30 moves later. Which RL challenge does this illustrate?", options: ["Overfitting to the games it trained on", "Vanishing gradients deep in the network", "Credit assignment with delayed rewards", "Class imbalance in its reward data"], answer: 2, explain: "When rewards arrive much later, it's hard to tell which earlier actions deserve the credit. That's the credit-assignment problem." },
+      { q: "How is RL used to build modern AI assistants?", options: ["RLHF optimizes it against human-preference rewards", "RL replaces pretraining entirely for language models", "RL is used only to choose the model's temperature", "RL makes the model search the web for each answer"], answer: 0, explain: "RLHF trains a reward model on human preferences and uses RL to push the LLM toward responses that model scores highly." },
     ],
   },
 
@@ -177,9 +177,9 @@ ATLAS.addNodes([
       source: { title: "StatQuest — Linear Regression, clearly explained", url: "https://www.youtube.com/watch?v=nk2CQITm_eo", note: "Builds intuition for fitting and interpreting the line." },
     },
     quiz: [
-      { q: "A coefficient (weight) in linear regression tells you…", options: ["The number of data points", "How much the prediction changes per unit change in that feature", "The learning rate", "The GPU count"], answer: 1, explain: "Each weight is the marginal effect of its feature on the prediction, holding others fixed." },
-      { q: "Linear regression is typically fit by minimizing…", options: ["The number of features", "The squared error between predictions and actual values", "The accuracy", "The cross-entropy over classes"], answer: 1, explain: "Least-squares regression minimizes the sum of squared residuals." },
-      { q: "How does linear regression relate to neural networks?", options: ["They are unrelated", "A single neuron without an activation function is exactly linear regression", "It is more complex than any network", "It uses no weights"], answer: 1, explain: "A neuron computes a weighted sum plus bias; without a non-linear activation that's linear regression." },
+      { q: "A house-price model has a coefficient of 12,000 on 'bedrooms'. What does that mean?", options: ["Houses need 12,000 bedrooms to reach the average price", "Bedrooms explain 12,000 of the model's total error", "The model saw 12,000 houses with bedrooms in training", "Each bedroom adds about 12,000 to the price, others fixed"], answer: 3, explain: "Linear coefficients are directly interpretable: holding other features fixed, each extra bedroom moves the prediction by the coefficient." },
+      { q: "Sales grow slowly, then sharply, as ad spend rises. Why might plain linear regression fit poorly?", options: ["It can't handle numbers larger than one million", "It needs at least ten input features to work", "It can only fit a straight-line relationship", "It only works when the target is a category"], answer: 2, explain: "Linear regression assumes linearity. Curves and interactions need engineered features (like squared terms) or a more flexible model." },
+      { q: "How are linear regression's weights typically found?", options: ["Randomly trying weights until one looks good", "By minimizing squared error on the training data", "Copying the weights from a pretrained network", "Setting every weight equal to the feature's mean"], answer: 1, explain: "Least squares minimizes squared error. It can be solved in closed form with linear algebra, or iteratively with gradient descent." },
     ],
   },
 
@@ -212,9 +212,9 @@ ATLAS.addNodes([
       source: { title: "StatQuest — Logistic Regression", url: "https://www.youtube.com/watch?v=yIYKR4sgzI8", note: "Sigmoid, log-loss, and interpretation explained visually." },
     },
     quiz: [
-      { q: "What does the sigmoid function do in logistic regression?", options: ["Adds more features", "Squashes the linear output into a probability between 0 and 1", "Removes the bias term", "Sorts the data"], answer: 1, explain: "The sigmoid maps any real number to (0,1), turning a linear score into a probability." },
-      { q: "Logistic regression is trained by minimizing…", options: ["Squared error", "Cross-entropy (log) loss", "Accuracy", "The number of epochs"], answer: 1, explain: "Cross-entropy loss is the standard objective for logistic regression and classification generally." },
-      { q: "The decision boundary learned by plain logistic regression is…", options: ["Always circular", "Linear", "Random", "Nonexistent"], answer: 1, explain: "Logistic regression separates classes with a linear boundary unless you engineer non-linear features." },
+      { q: "Why can't plain linear regression output the probability that an email is spam?", options: ["It can't take word counts as input features", "It always outputs negative numbers for text", "It needs images rather than text as input", "Its output isn't limited to between 0 and 1"], answer: 3, explain: "A probability must lie between 0 and 1. Logistic regression squashes the linear combination through a sigmoid to produce one." },
+      { q: "Your deep model beats a logistic-regression baseline by 0.2%, but it's 100× slower and opaque. What's the sound conclusion?", options: ["Always ship the deep model; it scored higher", "The complex model may not be earning its keep", "Logistic regression must have been overfitting", "Baselines don't matter once deep models exist"], answer: 1, explain: "A strong, fast, interpretable baseline tells you whether complexity pays off. A tiny gain may not justify the cost." },
+      { q: "Which loss trains logistic regression?", options: ["Mean squared error (MSE)", "Hinge loss (as in SVMs)", "Cross-entropy (log loss)", "Mean absolute error (MAE)"], answer: 2, explain: "Logistic regression minimizes cross-entropy, the same loss behind neural-network classifiers and LLMs; it penalizes confident wrong predictions heavily." },
     ],
   },
 
@@ -249,9 +249,9 @@ ATLAS.addNodes([
       source: { title: "StatQuest — Decision Trees", url: "https://www.youtube.com/watch?v=_L39rN6gz7Y", note: "Step-by-step tree building and impurity." },
     },
     quiz: [
-      { q: "A decision tree makes predictions by…", options: ["Multiplying matrices", "Following a series of yes/no splits down to a leaf", "Computing a sigmoid", "Averaging all features equally"], answer: 1, explain: "Trees route an example through learned splits to a leaf that holds the prediction." },
-      { q: "Splits in a classification tree are chosen to…", options: ["Maximize impurity", "Reduce impurity (e.g. Gini or entropy)", "Increase the tree depth arbitrarily", "Match the GPU count"], answer: 1, explain: "Good splits make the resulting groups purer (more homogeneous in the target)." },
-      { q: "A single deep decision tree tends to…", options: ["Underfit severely", "Overfit and have high variance", "Ignore the data", "Always generalize perfectly"], answer: 1, explain: "Unrestricted trees memorize noise and are unstable — motivating ensembles." },
+      { q: "A single deep decision tree fits the training data perfectly but does poorly on new data. What's happening?", options: ["It's underfitting because trees are too simple", "Trees can't make predictions on unseen data", "It's overfitting by memorizing noise in the data", "The tree needs its features scaled first"], answer: 2, explain: "Deep trees can carve out every training point, memorizing noise. They're also high-variance, which is why ensembles of trees work much better." },
+      { q: "How does a decision tree choose each split?", options: ["A random feature and threshold at every node", "The split that most reduces impurity, like Gini", "The feature with the largest numeric values", "Whichever split keeps the tree most balanced"], answer: 1, explain: "At each node the algorithm greedily picks the split that best separates the outcomes, measured by Gini or entropy (or variance, for regression)." },
+      { q: "Why are decision trees convenient with messy tabular data?", options: ["They never overfit, whatever their depth", "They need every feature scaled to the same range", "They only work with numeric, not categorical, data", "They mix numeric and categorical data with little prep"], answer: 3, explain: "Trees handle mixed data types, non-linearities and interactions with little preprocessing, though a single tree overfits easily." },
     ],
   },
 
@@ -288,9 +288,9 @@ ATLAS.addNodes([
       source: { title: "Leo Breiman — Random Forests (2001)", url: "https://www.stat.berkeley.edu/~breiman/randomforest2001.pdf", note: "The original paper introducing the method." },
     },
     quiz: [
-      { q: "Bagging reduces error primarily by lowering…", options: ["Bias", "Variance", "The number of features", "The learning rate"], answer: 1, explain: "Averaging many models cancels their independent errors, cutting variance." },
-      { q: "What extra randomness does a random forest add beyond bagging?", options: ["Random labels", "Considering only a random subset of features at each split", "Random GPUs", "Random loss functions"], answer: 1, explain: "Feature subsampling at each split decorrelates the trees, making the ensemble average more effective." },
-      { q: "Why does decorrelating the trees matter?", options: ["It makes them slower", "Averaging helps most when models don't all make the same mistakes", "It increases bias on purpose", "It removes the need for data"], answer: 1, explain: "If trees were identical, averaging wouldn't help; diversity is what reduces variance." },
+      { q: "Why does averaging many trees in a random forest reduce error?", options: ["Each tree is trained to be more biased", "Averaging makes each tree individually deeper", "Their independent errors partly cancel out", "More trees mean the data is memorized better"], answer: 2, explain: "Bagging averages models trained on different resamples. Their random errors partly cancel, cutting variance without adding bias." },
+      { q: "What does sampling a random subset of features at each split accomplish?", options: ["It makes each tree train on fewer data rows", "It decorrelates the trees so errors differ", "It guarantees the forest finds the best tree", "It removes the need for bootstrap resampling"], answer: 1, explain: "Without it, trees would split on the same strong features and make the same mistakes. Decorrelation is what makes averaging powerful." },
+      { q: "You need a strong tabular baseline fast, with little time for tuning. What's a good default?", options: ["A 50-layer neural network", "A single very deep tree", "k-means clustering", "A random forest"], answer: 3, explain: "Random forests give strong accuracy out of the box, resist overfitting better than a single tree, and handle mixed data naturally." },
     ],
   },
 
@@ -326,9 +326,9 @@ ATLAS.addNodes([
       source: { title: "Chen & Guestrin — XGBoost paper", url: "https://arxiv.org/abs/1603.02754", note: "The system that made gradient boosting ubiquitous." },
     },
     quiz: [
-      { q: "How does boosting differ from bagging?", options: ["It trains models in parallel and averages them", "It trains models sequentially, each correcting the previous ones' errors", "It uses no trees", "It requires labeled images"], answer: 1, explain: "Boosting is sequential and error-focused; bagging is parallel and averaging." },
-      { q: "In gradient boosting, each new tree is fit to approximately…", options: ["Random noise", "The residual errors / negative gradient of the current ensemble", "The raw labels only", "The feature names"], answer: 1, explain: "New trees target what the ensemble still gets wrong — the negative gradient of the loss." },
-      { q: "For which kind of data is gradient boosting usually the strongest choice?", options: ["Raw images", "Structured tabular data", "Raw audio waveforms", "Long free text"], answer: 1, explain: "Gradient-boosted trees typically outperform other methods, including deep nets, on tabular data." },
+      { q: "How does boosting differ from bagging?", options: ["Trees are built in parallel on bootstrap resamples", "Trees are built in sequence, each fixing past errors", "Boosting uses a single tree instead of many trees", "Boosting only works on text, bagging on tables"], answer: 1, explain: "Bagging trains trees in parallel and averages them; boosting adds trees one by one, each focused on what the ensemble still gets wrong." },
+      { q: "What does each new tree in gradient boosting fit?", options: ["The original target values from scratch", "A random subset of the model's features only", "The average prediction of all previous trees", "The loss's negative gradient (the residuals)"], answer: 3, explain: "Each tree fits the negative gradient (roughly the residual errors); adding it with a small learning rate nudges predictions toward the truth." },
+      { q: "Your data is 200,000 rows of customer features in a table. Which model is usually the one to beat?", options: ["A convolutional neural network (CNN)", "A naive Bayes classifier on raw values", "Gradient-boosted trees like XGBoost", "k-nearest neighbors with k set to 1"], answer: 2, explain: "On structured, tabular data, gradient-boosted trees usually outperform other models, including deep learning." },
     ],
   },
 
@@ -363,9 +363,9 @@ ATLAS.addNodes([
       source: { title: "StatQuest — k-nearest neighbors", url: "https://www.youtube.com/watch?v=HVXime0nqeI", note: "The algorithm and its trade-offs in a few minutes." },
     },
     quiz: [
-      { q: "k-NN makes a prediction by…", options: ["Fitting a global equation during training", "Finding the k most similar stored examples and letting them vote/average", "Building a decision tree", "Running gradient descent"], answer: 1, explain: "k-NN is instance-based: it looks up the nearest stored examples at prediction time." },
-      { q: "Why is k-NN called a 'lazy' learner?", options: ["It is slow to predict only", "It does no real training — it just stores the data and computes at query time", "It refuses to run", "It ignores distances"], answer: 1, explain: "There is no model-fitting step; work is deferred to prediction time." },
-      { q: "Modern vector search / RAG is essentially…", options: ["Linear regression", "k-NN over embeddings, accelerated by approximate-nearest-neighbor methods", "A decision tree", "Reinforcement learning"], answer: 1, explain: "Retrieval finds nearest embedding neighbors of a query — k-NN at scale." },
+      { q: "Your k-NN model uses income (tens of thousands) and age (tens). Its predictions ignore age. Why?", options: ["k-NN can't use more than one feature at a time", "Unscaled income dominates the distance calculation", "Age is categorical, so k-NN skips it", "k was set too high for the number of features"], answer: 1, explain: "Distances are dominated by large-range features unless you scale them. How you measure 'similar' is everything in k-NN." },
+      { q: "What happens as you increase k in k-NN?", options: ["The model trains longer on every data point", "Each prediction uses only the single closest point", "Predictions smooth out; too large over-smooths", "The distance metric switches from cosine to Euclidean"], answer: 2, explain: "Small k is noisy and overfits; large k averages over more neighbors and can over-smooth. k is the key knob." },
+      { q: "How does RAG retrieval relate to k-NN?", options: ["It trains a k-NN classifier on every document", "It replaces nearest neighbors with keyword rules", "It uses k-NN to choose the model's temperature", "It finds a query's nearest document embeddings"], answer: 3, explain: "Retrieval embeds the query and fetches the nearest document vectors: k-NN at scale, sped up with approximate nearest-neighbor search." },
     ],
   },
 
@@ -396,9 +396,9 @@ ATLAS.addNodes([
       source: { title: "StatQuest — Support Vector Machines", url: "https://www.youtube.com/watch?v=efR1C6CvhmE", note: "Margins and the kernel trick, visualized." },
     },
     quiz: [
-      { q: "An SVM selects the decision boundary that…", options: ["Passes through the most points", "Maximizes the margin to the nearest points of each class", "Is always vertical", "Uses every data point equally"], answer: 1, explain: "SVMs maximize the margin; only the closest points (support vectors) define the boundary." },
-      { q: "The kernel trick allows an SVM to…", options: ["Skip training", "Handle non-linear separation by implicitly mapping to a higher-dimensional space", "Avoid using any features", "Reduce accuracy"], answer: 1, explain: "Kernels compute similarities as if in a higher-dimensional space, enabling non-linear boundaries efficiently." },
-      { q: "SVMs are especially well-suited to…", options: ["Massive image datasets", "High-dimensional data with relatively few samples, like text", "Real-time video", "Unlabeled data"], answer: 1, explain: "SVMs excel when features are many and samples are limited, common in text and bioinformatics." },
+      { q: "Of all the boundaries that separate two classes, which one does an SVM choose?", options: ["The one passing through the average of both classes", "The one with the widest margin to the nearest points", "The one that uses the fewest input features", "The first one found by gradient descent"], answer: 1, explain: "SVMs maximize the margin. The nearest points (the support vectors) alone define the boundary, and wide margins tend to generalize better." },
+      { q: "Your two classes form concentric circles, so no straight line separates them. What lets an SVM handle this?", options: ["Removing the points closest to the boundary", "Using many more support vectors per class", "A kernel mapping to a higher-dimensional space", "Converting the features into categories"], answer: 2, explain: "The kernel trick computes similarities as if the data lived in a higher-dimensional space where it's separable, giving curved boundaries efficiently." },
+      { q: "Where do SVMs still shine today?", options: ["Many features, modest samples, as with text", "Huge image datasets with millions of examples", "Generating realistic images from random noise", "Streaming audio that needs real-time decoding"], answer: 0, explain: "SVMs do well when features outnumber samples and the signal is subtle, like text. They scale poorly to massive datasets." },
     ],
   },
 
@@ -430,9 +430,9 @@ ATLAS.addNodes([
       source: { title: "StatQuest — Naive Bayes", url: "https://www.youtube.com/watch?v=O2L2Uv9pdDA", note: "Why the naive assumption works, with a spam example." },
     },
     quiz: [
-      { q: "Naive Bayes classifies by choosing the class that…", options: ["Has the most training examples", "Is most probable given the features, via Bayes' theorem", "Minimizes squared error", "Has the widest margin"], answer: 1, explain: "It computes posterior class probabilities with Bayes' theorem and picks the highest." },
-      { q: "The 'naive' assumption is that features are…", options: ["Perfectly correlated", "Conditionally independent given the class", "All numeric", "Always missing"], answer: 1, explain: "It assumes features are independent given the class, simplifying the probability computation." },
-      { q: "Despite the assumption often being false, Naive Bayes…", options: ["Never works", "Works remarkably well, especially for text, and is very fast", "Requires deep learning", "Cannot classify spam"], answer: 1, explain: "It's robust to the violated assumption and is a fast, strong baseline for text." },
+      { q: "Naive Bayes assumes the words 'free' and 'prize' occur independently in spam. That's false, so why does it still work well?", options: ["The assumption is actually true for most text", "It secretly learns word pairs during training", "It only works when the assumption holds exactly", "The ranking of classes is often right despite it"], answer: 3, explain: "Its probabilities are off, but it's robust to the violation and usually still ranks the right class highest." },
+      { q: "What does the independence assumption buy you?", options: ["Perfectly calibrated probabilities every time", "Fast training and prediction with little data", "The ability to model word order in sentences", "Automatic handling of images and audio"], answer: 1, explain: "With independent features, probabilities just multiply, so training and prediction are very fast and need little data." },
+      { q: "You need a quick, cheap spam-filter baseline on word counts. What's a strong first choice?", options: ["A 1-billion-parameter transformer", "k-means clustering", "Naive Bayes", "Linear regression"], answer: 2, explain: "On high-dimensional word counts, naive Bayes is cheap and fast, and hard to beat by much on simple text tasks." },
     ],
   },
 
@@ -468,9 +468,9 @@ ATLAS.addNodes([
       source: { title: "StatQuest — K-means clustering", url: "https://www.youtube.com/watch?v=4b5d3muPQmA", note: "The iterative procedure and how to choose k." },
     },
     quiz: [
-      { q: "Each iteration of k-means does which two steps?", options: ["Split and merge clusters", "Assign points to the nearest centroid, then move centroids to the cluster means", "Train a tree and prune it", "Compute gradients and backprop"], answer: 1, explain: "k-means alternates assignment (nearest centroid) and update (recompute centroids as means)." },
-      { q: "A key limitation of k-means is that…", options: ["It needs labeled data", "You must choose k, and it assumes roughly round, similar-sized clusters", "It cannot use numeric features", "It always finds the global optimum"], answer: 1, explain: "k is a required input, and the method struggles with non-spherical or unequal clusters and only reaches a local optimum." },
-      { q: "Before running k-means you should usually…", options: ["Delete half the data", "Standardize the features so distances are comparable", "Add labels", "Increase the learning rate"], answer: 1, explain: "Unscaled features let large-range dimensions dominate the distance, distorting clusters." },
+      { q: "What does each k-means iteration do?", options: ["Pick new random centroids and restart from scratch", "Merge the two closest clusters into a single one", "Assign points to nearest centroids, then re-center them", "Label each point using its known correct class"], answer: 2, explain: "k-means alternates two steps, assigning each point to its nearest centroid and moving each centroid to the mean of its points, until nothing changes." },
+      { q: "Running k-means twice on the same data gives different clusters. Why?", options: ["The data changes every time k-means reads it in", "It converges to local optima from random starts", "k-means picks a new value of k on each run", "It uses labels that shuffle between the runs"], answer: 1, explain: "k-means converges to a local optimum that depends on initialization. k-means++ picks better starting centroids." },
+      { q: "Your data has long, stretched-out clusters of very different sizes. What's the concern with k-means?", options: ["It can only find exactly two clusters", "It requires labeled data for each cluster", "It runs too slowly on stretched shapes", "It assumes round, similar-sized clusters"], answer: 3, explain: "k-means minimizes within-cluster variance, which favors compact, roughly round clusters of similar size. Other shapes fit poorly." },
     ],
   },
 
@@ -504,9 +504,9 @@ ATLAS.addNodes([
       source: { title: "StatQuest — PCA and t-SNE", url: "https://www.youtube.com/watch?v=FgakZw6K1QQ", note: "Clear walkthroughs of both PCA and t-SNE." },
     },
     quiz: [
-      { q: "PCA reduces dimensions by keeping the directions that…", options: ["Have the least variance", "Capture the most variance in the data", "Are chosen at random", "Match the labels"], answer: 1, explain: "PCA keeps the top principal components — the orthogonal directions of greatest variance." },
-      { q: "t-SNE and UMAP are mainly used for…", options: ["Training final classifiers", "Non-linear 2D/3D visualization of high-dimensional structure", "Encrypting data", "Speeding up gradient descent"], answer: 1, explain: "They preserve local neighborhoods to reveal clusters visually, though plot distances can be misleading." },
-      { q: "Dimensionality reduction is conceptually similar to…", options: ["Learning an embedding — a compact meaningful representation", "Adding more features", "Deleting the labels", "Increasing the batch size"], answer: 0, explain: "Both produce a low-dimensional representation that preserves meaningful structure." },
+      { q: "You need to compress 300 correlated features into 20 for a faster, interpretable model. Which method fits?", options: ["t-SNE", "PCA", "UMAP", "k-NN"], answer: 1, explain: "PCA is linear, fast and interpretable, keeping the directions of greatest variance. t-SNE and UMAP are mainly for 2D visualization." },
+      { q: "In a UMAP plot of embeddings, one cluster looks twice as big as another. What can you conclude?", options: ["That cluster has exactly twice as many points", "That cluster's items are twice as different", "Not much; these plots distort sizes", "The bigger cluster is twice as important"], answer: 2, explain: "t-SNE and UMAP preserve local neighborhoods to reveal clusters, but cluster sizes and the distances between clusters aren't reliable." },
+      { q: "How does dimensionality reduction relate to embeddings?", options: ["Both give compact representations that keep meaning", "Embeddings always have more dimensions than the input", "They're unrelated; embeddings are only for text", "Reduction deletes the meaning embeddings capture"], answer: 0, explain: "An embedding is a compact, meaningful representation, which is what dimensionality reduction aims for. PCA on word co-occurrences was an early word embedding." },
     ],
   },
 
@@ -544,9 +544,9 @@ ATLAS.addNodes([
       source: { title: "Google — Generalization, overfitting, and the tradeoff", url: "https://developers.google.com/machine-learning/crash-course/overfitting/overfitting", note: "The tradeoff framed with concrete diagnostics." },
     },
     quiz: [
-      { q: "A model with high bias is likely…", options: ["Overfitting the training data", "Underfitting — too simple to capture the pattern", "Perfectly generalizing", "Out of memory"], answer: 1, explain: "High bias means the model is too simple, performing poorly on both training and test data." },
-      { q: "High variance shows up as…", options: ["Poor training and poor test performance", "Great training performance but poor test performance", "Identical train and test error", "No error at all"], answer: 1, explain: "Overfitting (high variance) fits training data well but fails to generalize to test data." },
-      { q: "If a model is overfitting (high variance), a good remedy is to…", options: ["Add more parameters", "Get more data, regularize, or simplify the model", "Train even longer on the same data", "Remove the validation set"], answer: 1, explain: "Reducing variance calls for more data, regularization, simpler models, or ensembling." },
+      { q: "Your model scores poorly on both training and validation data. Which diagnosis and fix fit?", options: ["High variance: add regularization or more data", "High bias: use a more expressive model or features", "It's perfect; low scores mean the task is hard", "High variance: remove the validation set"], answer: 1, explain: "Poor on both means underfitting (high bias). Add capacity or features; regularization would make it worse." },
+      { q: "Training accuracy is 98%, validation accuracy 71%. What should you try?", options: ["A much bigger model with many more parameters", "Training for many more epochs", "Removing regularization entirely", "More data, regularization, or a simpler model"], answer: 3, explain: "A large train–validation gap signals high variance (overfitting). Reduce it with more data, regularization, a simpler model, or ensembles." },
+      { q: "As model complexity increases, what typically happens?", options: ["Bias and variance both fall", "Bias rises and variance falls", "Bias falls and variance rises", "Neither bias nor variance changes"], answer: 2, explain: "More flexible models fit the signal better (lower bias) but also chase noise (higher variance). Total error is lowest somewhere in between." },
     ],
   },
 
@@ -581,9 +581,9 @@ ATLAS.addNodes([
       source: { title: "Google — Regularization for simplicity", url: "https://developers.google.com/machine-learning/crash-course/regularization-for-simplicity/l2-regularization", note: "L2, L1, and the intuition for penalties." },
     },
     quiz: [
-      { q: "The purpose of regularization is to…", options: ["Speed up the GPU", "Reduce overfitting by discouraging unnecessary complexity", "Increase the number of features", "Delete the validation set"], answer: 1, explain: "Regularization penalizes complexity so the model generalizes rather than memorizing noise." },
-      { q: "Which regularizer tends to drive some weights exactly to zero (feature selection)?", options: ["L2 (ridge)", "L1 (lasso)", "Dropout", "Batch normalization"], answer: 1, explain: "L1's absolute-value penalty produces sparse solutions, zeroing out some weights entirely." },
-      { q: "Dropout regularizes a neural network by…", options: ["Adding more layers", "Randomly zeroing out neurons during training", "Increasing the learning rate", "Removing the loss function"], answer: 1, explain: "Randomly dropping neurons forces redundancy and prevents co-adaptation, reducing overfitting." },
+      { q: "You want a model that automatically drops irrelevant features by setting their weights to exactly zero. Which penalty?", options: ["L2 (ridge)", "Dropout", "Early stopping", "L1 (lasso)"], answer: 3, explain: "L1 penalizes absolute weights and drives some to exactly zero, performing feature selection. L2 shrinks weights smoothly toward zero." },
+      { q: "You raised the regularization strength λ a lot, and now the model does poorly on both training and validation data. What happened?", options: ["Regularization always makes models overfit", "Too much regularization caused underfitting", "λ only affects the validation score", "The model now has too many parameters"], answer: 1, explain: "λ sets the strength. Too much pushes the model toward simplicity until it can't capture the signal; too little lets overfitting return." },
+      { q: "Which of these is also a form of regularization, in spirit?", options: ["Training longer after validation loss starts rising", "Removing the validation set to use more data", "Stopping training when validation loss starts rising", "Raising the learning rate to converge faster"], answer: 2, explain: "Early stopping, dropout, data augmentation and ensembling all reduce variance: anything that constrains the model or diversifies the data." },
     ],
   },
 
@@ -619,9 +619,9 @@ ATLAS.addNodes([
       source: { title: "scikit-learn — Cross-validation guide", url: "https://scikit-learn.org/stable/modules/cross_validation.html", note: "Practical CV variants and pitfalls." },
     },
     quiz: [
-      { q: "In k-fold cross-validation, each fold is used…", options: ["Only for training, never validation", "As the validation set exactly once, training on the rest", "As the test set every time", "Not at all"], answer: 1, explain: "Each of the k folds serves as validation once while the other k−1 folds train the model." },
-      { q: "The main advantage of cross-validation over a single split is…", options: ["It needs less code", "A more reliable estimate that's less sensitive to one lucky/unlucky split", "It guarantees zero error", "It removes the need for data"], answer: 1, explain: "Averaging over folds uses data efficiently and reduces dependence on a single arbitrary split." },
-      { q: "To avoid leakage during cross-validation, preprocessing should be fit…", options: ["On the whole dataset before splitting", "Inside each fold, on that fold's training portion only", "On the test set", "Never"], answer: 1, explain: "Fitting scalers/encoders on all data leaks validation information; do it within each fold's training data." },
+      { q: "You have only 500 labeled rows. Why prefer 5-fold cross-validation over a single 80/20 split?", options: ["It trains the final model about five times faster", "Each row is validated once; the estimate is steadier", "It removes the need to keep a separate test set", "It effectively grows the dataset to 2,500 rows"], answer: 1, explain: "Rotating the validation fold uses limited data efficiently and averages out a lucky or unlucky split. The spread across folds also shows stability." },
+      { q: "You standardize the whole dataset, then run cross-validation. What's wrong?", options: ["Standardization makes cross-validation run slower", "Cross-validation can't be used with scaled data", "Nothing — preprocessing first is the right order", "Statistics from validation folds leak into training"], answer: 3, explain: "Fit scalers and encoders on each fold's training portion only. Fitting on everything first leaks validation information and inflates scores." },
+      { q: "You're forecasting daily sales. How should you set up cross-validation?", options: ["Shuffle all days randomly into five folds", "Use a single fold containing all the data", "Train on the past, validate on later periods", "Validate on the earliest days, train on later"], answer: 2, explain: "With temporal structure, use time-series CV so validation always comes after training. Random folds let the future leak into the past." },
     ],
   },
 
@@ -655,9 +655,9 @@ ATLAS.addNodes([
       source: { title: "Google — Recommendation systems course", url: "https://developers.google.com/machine-learning/recommendation", note: "Content-based, collaborative filtering, and matrix factorization." },
     },
     quiz: [
-      { q: "Collaborative filtering recommends items based on…", options: ["Only the item's text description", "Patterns across many users' interactions ('people like you liked…')", "The GPU model", "Random selection"], answer: 1, explain: "Collaborative filtering leverages the collective behavior of similar users, needing no item features." },
-      { q: "In matrix factorization, a user's affinity for an item is computed as…", options: ["The sum of all ratings", "The dot product of the user and item embedding vectors", "A decision tree split", "The learning rate"], answer: 1, explain: "User and item are embedded as vectors; their dot product estimates affinity — echoing retrieval." },
-      { q: "The 'cold-start problem' refers to difficulty recommending when…", options: ["The servers are cold", "A user or item is new and has little/no interaction history", "The dataset is too large", "The model is overfit"], answer: 1, explain: "New users or items lack the history that collaborative methods rely on." },
+      { q: "A brand-new user has no history. Which problem is this, and what helps?", options: ["Overfitting; add more regularization to the model", "Feedback loops; stop recommending anything at all", "Cold start; use content or popularity signals", "Data leakage; remove the user from the dataset"], answer: 2, explain: "Collaborative filtering needs interaction history. For new users or items, content features or popularity help until data builds up." },
+      { q: "In matrix factorization, how is a user's affinity for an item predicted?", options: ["The number of times the item appears in the data", "The dot product of the user and item embeddings", "The item's price divided by the user's average spend", "A decision tree trained on the user's name"], answer: 1, explain: "Users and items get learned embeddings, and their dot product scores affinity: the same idea behind vector retrieval." },
+      { q: "A news app recommends whatever is clicked most, so popular stories get even more clicks and niche ones vanish. What's this?", options: ["The cold-start problem for brand-new stories", "Underfitting in the recommendation model itself", "A privacy leak in the app's click logs", "A feedback loop that amplifies popularity bias"], answer: 3, explain: "Recommendations shape future data. Without care, a feedback loop keeps boosting what's already popular." },
     ],
   },
 ]);

@@ -13,15 +13,18 @@ files and reload the page. A validator (`node tools/validate.js`) checks your wo
 ## 1. Where things live
 
 ```
-data/_registry.js      window.ATLAS + addCluster/addNodes/addEdges helpers (don't edit)
+data/_registry.js      window.ATLAS + addCluster/addNodes/addEdges/addPaths helpers (don't edit)
 data/00-clusters.js    the 8 domains (id, label, color, blurb)
 data/10-math.js        ┐
 data/20-data-science.js│
    … through …         ├─ one file per domain; each file holds that domain's NODES
 data/80-cross-cutting.js┘
 data/99-edges.js       ALL edges (links between nodes), across every domain
+data/90-paths.js       curated, role-based learning paths (loaded after edges)
 index.html             loads the above via <script> with ?v= cache-busting
-js/app.js              the engine (graph, search, panel, quiz) — rarely needs editing
+js/app.js              the engine (graph, panel, quiz, paths) — rarely needs editing
+js/search.js           full-text search index over node content (no DOM)
+js/filesync.js         keeps progress synced to a user-chosen file (no DOM)
 tools/validate.js      the data validator
 ```
 
@@ -40,7 +43,7 @@ A node is a plain object appended via `ATLAS.addNodes([ ... ])`. Full shape:
   label: "Human Readable Name",       // shown on the node and panel title
   cluster: "dl",                      // one of the cluster ids in 00-clusters.js
   short: "One sentence shown on hover and under the title.",
-  keywords: "space separated terms for search",  // helps search find this node
+  keywords: "space separated terms for search",  // synonyms/acronyms not in the text (search already covers the lesson body)
 
   learn: {
     why: "Why this matters — grounds the concept in real AI-engineering practice.",
@@ -136,9 +139,16 @@ practice. Hold new content to the same standard as the existing nodes:
 **Quizzes**
 - Test **understanding**, not trivia. A learner who read the lesson should pass;
   one who skimmed should not.
-- Give ~4 options. Make distractors plausible.
-- **Don't leak the answer through formatting** — keep options similar in length and
-  style (the correct one shouldn't be the longest/most-detailed).
+- Prefer **application over recall**: a short scenario ("you're building X and see Y,
+  what do you try first?") beats "X is defined as…".
+- Give ~4 options. Make distractors plausible: real misconceptions or near-misses a
+  skimmer would pick. Avoid throwaways like "It is a typo" or "Never".
+- **Don't leak the answer through formatting.** Keep options similar in length and
+  style; the correct one shouldn't be the longest or most detailed. The validator
+  reports length giveaways (correct option ≥1.5× the average distractor); run
+  `node tools/validate.js --quiz` to list them.
+- Options are **shuffled on screen** on every attempt, so write them in any order.
+  `answer` is the index in the authored order.
 - Every question gets an `explain` that teaches, not just confirms.
 
 ---
@@ -154,7 +164,7 @@ Warnings (e.g. a node with < 3 quiz questions) are non-fatal; errors block.
 
 Then reload the page and spot-check the new node's panel (Learn renders, Quiz scores,
 connection chips navigate). Remember to **bump `?v=`** in `index.html` for any
-`data/*.js`, `js/app.js`, or `css/styles.css` you changed, or the browser serves a
+`data/*.js`, `js/*.js`, or `css/styles.css` you changed, or the browser serves a
 cached copy.
 
 ---
@@ -180,7 +190,21 @@ cached copy.
   the `FILES` array in `tools/validate.js`.
 - Populate nodes + edges; connect the new domain to the existing graph.
 
+**Add or edit a role-based learning path**
+- Paths live in `data/90-paths.js`:
+  `{ id, label, audience, blurb, steps: ["node-id", …] }`. `audience` is one line on who
+  it's for; `blurb` says what they'll get out of it.
+- A curated path is **exactly its steps, in order**. Unlike a goal-driven path, it never
+  pulls in prerequisites, which is how a non-technical path stays non-technical. So choose
+  the steps for the audience, and leave out foundations they don't need.
+- Order must respect real dependencies: if A is a `prereq` of B (or `enables` it),
+  directly or transitively, and both are on the path, A comes first. `partof` is exempt,
+  so a path may open with an overview node as its introduction. The validator enforces
+  this.
+- Paths reference node ids, so renaming or removing a node means updating any path that
+  uses it (the validator flags unknown ids).
+
 **Retire / rename a concept**
-- Renaming an `id` means updating every edge that references it. Prefer keeping ids
+- Renaming an `id` means updating every edge (and path) that references it. Prefer keeping ids
   stable. To remove a node, delete it and all its edges, then validate (watch for new
   orphans left behind).
