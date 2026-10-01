@@ -26,6 +26,7 @@ js/app.js              the engine (graph, panel, quiz, paths) — rarely needs e
 js/search.js           full-text search index over node content (no DOM)
 js/filesync.js         keeps progress synced to a user-chosen file (no DOM)
 tools/validate.js      the data validator
+tools/build-standalone.js  builds atlas-search-test.html, a single-file copy for testing
 ```
 
 Nodes for a domain go in that domain's file. **Every edge, regardless of which

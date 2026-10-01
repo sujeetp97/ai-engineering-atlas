@@ -103,6 +103,13 @@ add its links to `data/99-edges.js`, bump the `?v=` for the files you changed in
   ```
   Checks unique ids, valid edge references, no orphan nodes, full connectivity, valid quiz
   answers, and that the prerequisite graph has no cycles (learning paths depend on this).
+- **Test without a server:**
+  ```bash
+  node tools/build-standalone.js
+  ```
+  Inlines everything `index.html` loads into one file, `atlas-search-test.html`, that you
+  can open directly. It's a testing convenience (gitignored) — the site itself has no
+  build step.
 
 The teaching approach (knowledge first, then retrieval-practice quizzes with
 same-length options, citations to primary sources, spaced review) follows the
