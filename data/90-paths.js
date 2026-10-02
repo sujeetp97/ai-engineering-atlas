@@ -28,6 +28,7 @@ ATLAS.addPaths([
       "ai-workflows",
       "privacy-governance",
       "ai-ethics-bias",
+      "adopting-ai-in-teams",
     ],
   },
   {
