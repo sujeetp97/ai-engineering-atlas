@@ -508,4 +508,52 @@ ATLAS.addNodes([
       { q: "An AI's first draft is close, but too formal and a bit long. What's the most efficient next step?", options: ["Start a brand-new chat and write the prompt from scratch", "Accept it as is, since AI drafts can't be adjusted", "Rewrite the whole thing yourself from the beginning", "Reply with specific changes: 'more casual, half as long'"], answer: 3, explain: "Treat the first answer as a draft and iterate with specific feedback. The chat keeps the context, so it usually gets there faster than starting over." },
     ],
   },
+
+  {
+    id: "adopting-ai-in-teams",
+    label: "Adopting AI in Your Team",
+    cluster: "work",
+    short: "How to roll AI out to a team: pick the right tasks, agree a few rules, and check that it's actually helping.",
+    keywords: "adoption rollout team lead manager policy norms guidelines pilot change management productivity measure tools jagged frontier non-technical",
+    learn: {
+      why: "Using AI well yourself is one thing. Getting a whole team to use it well is another. Left alone, some people avoid it, some trust it too much, and nobody knows whether it's helping. A little structure (which tasks, which rules, how you'll check) is the difference between a real gain and a quiet drop in quality.",
+      sections: [
+        { h: "The gains are real, but uneven", body: [
+          "In a field experiment, 758 consultants at Boston Consulting Group did realistic work with or without an AI assistant. On tasks that suited the AI, those using it finished about 12% more tasks, about 25% faster, and with better results. On a task chosen to sit just outside what the AI could do, the people using it were **less** likely to reach the right answer than those working without it.",
+          "The researchers call this the **jagged frontier**: two tasks that look equally hard can fall on opposite sides of what AI does well, and you can't tell which by looking. So 'use AI for everything' and 'don't use AI' are both wrong for a team. The job is to find out where it helps *your* work.",
+        ]},
+        { h: "Start with the work, not the tool", body: [
+          { ul: [
+            "**Pick two or three recurring tasks** where a draft-then-review loop fits: first drafts, summaries of long documents, turning meeting notes into actions.",
+            "**Run a small trial**: a few willing people, a few weeks. Then share what worked, including the prompts, and what didn't.",
+            "**Ask where your words go** before approving a tool: is what you type stored, is it used to train the model, and who can see it? If your company already has an approved tool, use that one.",
+          ]},
+        ]},
+        { h: "Agree a few rules", body: [
+          { ul: [
+            "**What stays out**: customer personal data, confidential figures, and anything you wouldn't email to an outside supplier, unless the tool is approved for it.",
+            "**Who checks**: AI output is a draft until someone who knows the subject has reviewed it.",
+            "**Who's accountable**: the person who sends the work, never 'the AI'.",
+            "**When to say so**: agree where AI use should be disclosed, for example to customers.",
+          ]},
+          "Keep it to one page. Rules that nobody reads protect nobody.",
+        ]},
+        { h: "Check that it's helping", body: [
+          "Compare before and after on the same real tasks: how long they take, how much rework they need, and how many errors reach a customer. Enthusiasm and usage counts say nothing about quality. Expect a mixed picture, and be willing to drop AI from the tasks where it makes things worse.",
+          "Two honest limits: one study of consultants using one model won't match your team exactly, and the frontier moves as tools change. Re-check every few months instead of deciding once.",
+        ]},
+      ],
+      keyPoints: [
+        "AI's benefit is uneven: it helps a lot on some tasks and hurts on others that look similar. Find out which is which for your team's work.",
+        "Start with a few recurring tasks and a short trial, and agree one page of rules: what stays out, who checks, who's accountable.",
+        "Judge it by time, rework and errors on real tasks, before and after. Enthusiasm and usage counts aren't evidence.",
+      ],
+      source: { title: "Dell'Acqua et al. — Navigating the Jagged Technological Frontier", url: "https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4573321", note: "A field experiment with 758 BCG consultants: AI raised speed and quality on tasks that suited it, and lowered accuracy on one that didn't. Later published in Organization Science. It supports the 'uneven gains' and 'measure it' advice here; the team rules are practical guidance, not findings of the study." },
+    },
+    quiz: [
+      { q: "Your team used AI on two similar-looking reports. One came out faster and better; the other had subtle errors nobody caught. What best explains this?", options: ["The second writer must have used a weaker prompt", "Similar tasks can sit on either side of AI's ability", "AI gets worse the more a team uses it in a week", "The first report was simply an easier one to write"], answer: 1, explain: "This is the jagged frontier: tasks that look equally hard can fall on opposite sides of what AI does well. That's why a team has to test AI on its own tasks instead of assuming." },
+      { q: "A team lead wants to know whether a new AI tool is paying off after two months. Which evidence is most useful?", options: ["How many team members open the tool every day", "Whether people say they enjoy working with it", "Time and rework on the same tasks, before and after", "How many pages of text the tool has produced"], answer: 2, explain: "Usage, enthusiasm and volume don't show whether the work got better. Compare time, rework and errors on the same real tasks before and after." },
+      { q: "A teammate pastes a customer's complaint, with their name and account details, into a free AI chatbot to draft a reply. Which team rule addresses the main problem?", options: ["Every AI draft must be reviewed before it is sent", "Only approved tools may be given customer data", "AI use must be disclosed to customers in replies", "Prompts must be shared with the team each week"], answer: 1, explain: "The main problem is where the customer's data went, not the quality of the draft. A rule about what may go into which tools is what prevents it; review and disclosure are useful but come later." },
+    ],
+  },
 ]);

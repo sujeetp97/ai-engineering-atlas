@@ -299,4 +299,9 @@ ATLAS.addEdges([
   { source: "everyday-prompting", target: "prompt-engineering", type: "related" },
   { source: "everyday-prompting", target: "writing-with-ai", type: "prereq" },
   { source: "everyday-prompting", target: "research-with-ai", type: "prereq" },
+  { source: "adopting-ai-in-teams", target: "ai-assisted-work", type: "partof" },
+  { source: "ai-limitations", target: "adopting-ai-in-teams", type: "prereq" },
+  { source: "verification-review", target: "adopting-ai-in-teams", type: "prereq" },
+  { source: "adopting-ai-in-teams", target: "privacy-governance", type: "related" },
+  { source: "adopting-ai-in-teams", target: "human-in-the-loop", type: "related" },
 ]);
